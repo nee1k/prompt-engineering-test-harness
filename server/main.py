@@ -64,10 +64,12 @@ class EvaluationResult(BaseModel):
 
 async def call_ollama(prompt: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
     """Call Ollama API"""
+    # Use host.docker.internal when running in Docker, localhost otherwise
+    ollama_host = os.getenv("OLLAMA_HOST", "host.docker.internal")
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(
-                "http://localhost:11434/api/generate",
+                f"http://{ollama_host}:11434/api/generate",
                 json={
                     "model": model,
                     "prompt": prompt,
@@ -137,9 +139,11 @@ async def get_available_models():
 @app.get("/ollama/status/")
 async def check_ollama_status():
     """Check if Ollama is running and get available models"""
+    # Use host.docker.internal when running in Docker, localhost otherwise
+    ollama_host = os.getenv("OLLAMA_HOST", "host.docker.internal")
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.get("http://localhost:11434/api/tags", timeout=5.0)
+            response = await client.get(f"http://{ollama_host}:11434/api/tags", timeout=5.0)
             response.raise_for_status()
             models = response.json()
             return {
