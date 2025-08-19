@@ -1,0 +1,6 @@
+text,language,expected_output
+"Hello","French","Bonjour"
+"Good morning","Spanish","Buenos días"
+"Thank you","German","Danke"
+"How are you?","Italian","Come stai?"
+"Goodbye","Portuguese","Adeus"
