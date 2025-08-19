@@ -1,21 +1,41 @@
-# Emissary - Prompt System Monitor
+# Prompt System Monitor
 
-A lightweight application for monitoring and evaluating LLM prompt systems. Define prompt templates, upload test datasets, and run automated evaluations with detailed scoring.
+> **A lightweight, scalable application for monitoring and evaluating LLM prompt systems**
 
-## Features
+Define prompt templates, upload test datasets, and run automated evaluations with detailed scoring. Perfect for development teams, researchers, and anyone working with LLM applications.
 
-- **Prompt System Management**: Create and save prompt templates with variable placeholders
-- **Model Configuration**: Set parameters like temperature, max_tokens, top_p for different LLM models
-- **Regression Testing**: Upload CSV/JSONL files with test cases and expected outputs
-- **Automated Evaluation**: Run tests and get detailed scoring using fuzzy string matching
-- **Results Tracking**: View historical test runs and detailed per-sample results
-- **Simple UI**: Clean React interface for easy interaction
+## 📋 Table of Contents
 
-## Tech Stack
+- [✨ Features](#-features)
+- [🏗️ Architecture](#️-architecture)
+- [🚀 Quick Start](#-quick-start)
+- [📖 Usage Guide](#-usage-guide)
+- [🤖 Model Providers](#-model-providers)
+- [📝 Example Workflow](#-example-workflow)
+- [📄 File Formats](#-file-formats)
+- [🚀 Deployment & Scaling](#-deployment--scaling)
+- [🔧 Manual Setup](#-manual-setup)
+- [📊 Contributing](#-contributing)
 
-- **Backend**: FastAPI (Python) with SQLAlchemy and SQLite
+## ✨ Features
+
+- **🎯 Prompt System Management** - Create and save prompt templates with variable placeholders
+- **⚙️ Model Configuration** - Configure temperature, max_tokens, top_p for different LLM models
+- **📊 Regression Testing** - Upload CSV/JSONL files with test cases and expected outputs
+- **🤖 Automated Evaluation** - Run tests with fuzzy string matching and detailed scoring
+- **📈 Results Tracking** - View historical test runs and per-sample results
+- **🎨 Modern UI** - Clean React interface with real-time feedback
+- **🔌 Multi-Provider Support** - OpenAI (cloud) and Ollama (local) models
+- **📦 Containerized** - Production-ready with Docker and Kubernetes support
+
+## 🏗️ Architecture
+
+### Tech Stack
+- **Backend**: FastAPI (Python) with SQLAlchemy
 - **Frontend**: React + Vite
-- **LLM Integration**: OpenAI API + Ollama (local models)
+- **Database**: SQLite (dev) / PostgreSQL (prod)
+- **Cache**: Redis (production)
+- **LLM Providers**: OpenAI API + Ollama
 - **Evaluation**: Fuzzy string similarity using difflib
 
 ## Quick Start
@@ -63,113 +83,151 @@ A lightweight application for monitoring and evaluating LLM prompt systems. Defi
 
 3. **Run the test** and view detailed results with per-sample scoring.
 
-## Prerequisites
+## 🚀 Quick Start
 
-- Python 3.8+
-- Node.js 16+
-- OpenAI API key (optional - can use Ollama for local models)
-- Ollama (optional - for local model inference)
+### Prerequisites
+- **Docker** and **Docker Compose**
+- **OpenAI API key** (optional - can use Ollama for local models)
 
-## Quick Start
+### Simple Setup
 
-1. **Install dependencies:**
+1. **Clone the repository:**
    ```bash
-   npm run install-all
+   git clone https://github.com/nee1k/prompt-systems-monitor.git
+   cd emissary
    ```
 
-2. **Set up environment (optional for OpenAI):**
+2. **Configure environment (optional):**
    ```bash
-   cd server
-   cp env.example .env
+   cp server/env.example .env
    # Add your OpenAI API key to .env (only needed for OpenAI models)
    ```
 
-3. **Set up Ollama (optional for local models):**
+3. **Start everything with Docker:**
    ```bash
-   python scripts/setup_ollama.py
+   docker-compose up -d
    ```
 
-4. **Start the application:**
-   ```bash
-   npm run dev
-   ```
+4. **Access the application:**
+   - 🌐 **Frontend**: http://localhost
+   - 📚 **API Docs**: http://localhost/api/docs
 
-5. **Open your browser:**
-   - Frontend: http://localhost:3000
-   - API Docs: http://localhost:8000/docs
+That's it! The application is now running with PostgreSQL, Redis, and all services ready to use.
 
-## Manual Setup
+### Alternative: Development Setup
 
-### Backend Setup
+For local development without Docker:
 
-1. **Install Python dependencies:**
-   ```bash
-   cd server
-   pip install -r requirements.txt
-   ```
+```bash
+# Install dependencies
+npm run install-all
 
-2. **Set environment variables:**
-   ```bash
-   cp env.example .env
-   # Add your OpenAI API key to .env
-   ```
+# Set up environment
+cd server && cp env.example .env
 
-3. **Run the server:**
-   ```bash
-   python run.py
-   ```
+# Start services
+npm run dev
+```
 
-### Frontend Setup
+## 📖 Usage Guide
 
-1. **Install Node dependencies:**
-   ```bash
-   cd client
-   npm install
-   ```
+### 1. Create a Prompt System
+- Navigate to **"Create System"**
+- Choose your **provider**: OpenAI (cloud) or Ollama (local)
+- Select a **model** from the available options
+- Enter a **name** and **template** with `{variable}` placeholders
+- Define your **variables** (comma-separated)
+- Configure **model parameters** (temperature, max_tokens, etc.)
 
-2. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+### 2. Upload a Regression Set
+- Go to **"Run Test"**
+- Upload a **CSV** or **JSONL** file with your test data
+- Ensure your file has columns for variables and an `expected_output` column
 
-## Usage
+### 3. Run Tests
+- Select your **prompt system**
+- Upload your **regression set**
+- Click **"Run Test"** to execute
 
-1. **Create a Prompt System:**
-   - Go to "Create System"
-   - Choose provider: OpenAI (cloud) or Ollama (local)
-   - Select a model from the available options
-   - Enter a name, template with {variable} placeholders, and variables
-   - Set model parameters (temperature, max_tokens, etc.)
+### 4. View Results
+- See **immediate results** after test completion
+- View **historical results** in "Test Results"
+- Analyze **per-sample scoring** and **aggregate metrics**
 
-2. **Upload a Regression Set:**
-   - Go to "Run Test"
-   - Upload a CSV or JSONL file with your test data
-   - File should have columns for variables and an 'expected_output' column
+## 🔧 Advanced Setup
 
-3. **Run Tests:**
-   - Select a prompt system
-   - Upload regression set
-   - Click "Run Test" to execute
+### Manual Installation (without Docker)
 
-4. **View Results:**
-   - See immediate results after test completion
-   - View historical results in "Test Results"
+If you prefer to run services manually:
 
-## Model Providers
+```bash
+# Backend
+cd server
+pip install -r requirements.txt
+cp env.example .env
+python run.py
 
-### OpenAI (Cloud)
-- Requires API key
-- Models: GPT-3.5 Turbo, GPT-4, GPT-4 Turbo
-- Higher quality, faster inference
-- Pay-per-use pricing
+# Frontend (in another terminal)
+cd client
+npm install
+npm run dev
+```
 
-### Ollama (Local)
-- Free, runs locally
-- Models: Llama 3, Mistral, Phi-3, Qwen, Code Llama
-- Lower quality but sufficient for testing
-- No API costs, privacy-friendly
+### Ollama Setup (for local models)
 
-## File Formats
+```bash
+# Run the automated setup script
+python scripts/setup_ollama.py
+
+# Or manually install Ollama
+# macOS: brew install ollama
+# Linux: curl -fsSL https://ollama.ai/install.sh | sh
+```
+
+## 🤖 Model Providers
+
+| Provider | Cost | Quality | Speed | Use Case |
+|----------|------|---------|-------|----------|
+| **OpenAI** | Pay-per-use | High | Fast | Production, high-quality outputs |
+| **Ollama** | Free | Good | Variable | Development, testing, privacy |
+
+### OpenAI (Cloud) ☁️
+- **Models**: GPT-3.5 Turbo, GPT-4, GPT-4 Turbo
+- **Pros**: High quality, fast inference, reliable
+- **Cons**: API costs, requires internet
+- **Best for**: Production applications, high-quality outputs
+
+### Ollama (Local) 🏠
+- **Models**: Llama 3, Mistral, Phi-3, Qwen, Code Llama
+- **Pros**: Free, privacy-friendly, no internet required
+- **Cons**: Lower quality, variable speed
+- **Best for**: Development, testing, cost-sensitive projects
+
+## 📝 Example Workflow
+
+### 1. Create a Prompt System
+```
+Template: "Translate the following text to {language}: {text}"
+Variables: text, language
+Provider: OpenAI
+Model: GPT-3.5 Turbo
+```
+
+### 2. Prepare Test Data (CSV)
+```csv
+text,language,expected_output
+"Hello world","French","Bonjour le monde"
+"Good morning","Spanish","Buenos días"
+"Thank you","German","Danke"
+```
+
+### 3. Run Tests & Analyze Results
+- Upload your regression set
+- Execute tests across all samples
+- Review per-sample scoring and aggregate metrics
+- Track performance over time
+
+## 📄 File Formats
 
 ### CSV Format
 - Headers should include variable names and `expected_output`
@@ -180,52 +238,62 @@ A lightweight application for monitoring and evaluating LLM prompt systems. Defi
 - Should include variable fields and `expected_output`
 - Example: `{"text": "Hello", "language": "French", "expected_output": "Bonjour"}`
 
-## Deployment & Scaling
+## 🚀 Deployment & Scaling
 
-### Development vs Production
+### Simple Production Deployment
 
-#### Development (Current)
-- **Database**: SQLite (file-based)
-- **Architecture**: Monolithic
-- **Scaling**: Single instance
-- **Use case**: Local development, testing
+The Docker setup is production-ready out of the box:
 
-#### Production (Containerized)
-- **Database**: PostgreSQL (client-server)
-- **Architecture**: Microservices
-- **Scaling**: Horizontal scaling possible
-- **Use case**: Multi-user, production deployment
+```bash
+# Clone and start
+git clone https://github.com/nee1k/prompt-systems-monitor.git
+cd emissary
+docker-compose up -d
 
-### Quick Start (Production)
+# Access your application
+# Frontend: http://localhost
+# API: http://localhost/api/docs
+```
 
-1. **Clone and setup:**
-   ```bash
-   git clone <repository-url>
-   cd emissary
-   cp server/env.example .env
-   # Edit .env with your OpenAI API key
-   ```
+### Architecture Comparison
 
-2. **Start all services:**
-   ```bash
-   docker-compose up -d
-   ```
+| Aspect | Development | Production (Docker) |
+|--------|-------------|---------------------|
+| **Database** | SQLite (file-based) | PostgreSQL (client-server) |
+| **Architecture** | Monolithic | Microservices |
+| **Scaling** | Single instance | Horizontal scaling ready |
+| **Use Case** | Local development | Multi-user, production |
 
-3. **Access the application:**
-   - Frontend: http://localhost
-   - API Docs: http://localhost/api/docs
-   - Database: localhost:5432
 
-### Scalable Architecture
 
-The containerized version includes:
+### 🏗️ Scalable Architecture
 
-- **PostgreSQL**: Production-ready database with ACID compliance
-- **Redis**: Caching and session management
-- **FastAPI Backend**: Containerized with health checks
-- **React Frontend**: Containerized with hot reload
-- **Nginx**: Reverse proxy and load balancing
-- **Docker Compose**: Orchestration and service management
+The production-ready containerized version includes:
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Frontend  │    │   Backend   │    │ PostgreSQL  │
+│   (React)   │◄──►│  (FastAPI)  │◄──►│  Database   │
+│   Port 3000 │    │   Port 8000 │    │   Port 5432 │
+└─────────────┘    └─────────────┘    └─────────────┘
+       ▲                   ▲                   ▲
+       │                   │                   │
+       └───────────────────┼───────────────────┘
+                           │
+                    ┌─────────────┐
+                    │    Redis    │
+                    │   Cache     │
+                    │   Port 6379 │
+                    └─────────────┘
+```
+
+**Components:**
+- **🗄️ PostgreSQL** - Production-ready database with ACID compliance
+- **⚡ Redis** - Caching and session management
+- **🔧 FastAPI Backend** - Containerized with health checks
+- **🎨 React Frontend** - Containerized with hot reload
+- **🌐 Nginx** - Reverse proxy and load balancing
+- **🐳 Docker Compose** - Orchestration and service management
 
 ### Scaling Benefits
 
