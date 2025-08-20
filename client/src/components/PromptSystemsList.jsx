@@ -53,7 +53,7 @@ function PromptSystemsList() {
               <th>Model</th>
               <th>Template</th>
               <th>Variables</th>
-              <th>Created (Latest First)</th>
+              <th>Created (UTC)</th>
             </tr>
           </thead>
           <tbody>

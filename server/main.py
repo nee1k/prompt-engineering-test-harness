@@ -12,6 +12,7 @@ import httpx
 from dotenv import load_dotenv
 from database import engine, SessionLocal
 from models import Base, PromptSystem, TestRun, TestResult
+from sqlalchemy.orm import joinedload
 import uuid
 from datetime import datetime
 
@@ -328,7 +329,7 @@ async def create_test_run(test_run: TestRunCreate):
 async def get_test_run(test_run_id: str):
     db = SessionLocal()
     try:
-        test_run = db.query(TestRun).filter(TestRun.id == test_run_id).first()
+        test_run = db.query(TestRun).options(joinedload(TestRun.prompt_system)).filter(TestRun.id == test_run_id).first()
         if not test_run:
             raise HTTPException(status_code=404, detail="Test run not found")
         
@@ -345,7 +346,7 @@ async def get_test_run(test_run_id: str):
 async def get_test_runs():
     db = SessionLocal()
     try:
-        test_runs = db.query(TestRun).order_by(TestRun.created_at.desc()).all()
+        test_runs = db.query(TestRun).options(joinedload(TestRun.prompt_system)).order_by(TestRun.created_at.desc()).all()
         return test_runs
     finally:
         db.close()
