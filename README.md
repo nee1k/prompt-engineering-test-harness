@@ -13,7 +13,6 @@ Define prompt templates, upload test datasets, and run automated evaluations wit
 1. **Clone and start:**
    ```bash
    git clone https://github.com/nee1k/prompt-systems-monitor.git
-   cd llm-prompt-evaluation-dashboard
    docker-compose up -d
    ```
 

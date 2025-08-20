@@ -9,3 +9,5 @@ httpx==0.25.2
 psycopg2-binary==2.9.9
 redis==5.0.1
 pandas==2.1.4
+apscheduler==3.10.4
+websockets==12.0

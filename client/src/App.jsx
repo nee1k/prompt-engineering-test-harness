@@ -4,6 +4,9 @@ import PromptSystemForm from './components/PromptSystemForm'
 import TestRunForm from './components/TestRunForm'
 import TestResults from './components/TestResults'
 import PromptSystemsList from './components/PromptSystemsList'
+import TestSchedules from './components/TestSchedules'
+import Alerts from './components/Alerts'
+import TestHistory from './components/TestHistory'
 
 function App() {
   const location = useLocation()
@@ -35,6 +38,24 @@ function App() {
             Run Test
           </Link>
           <Link 
+            to="/schedules" 
+            className={location.pathname === '/schedules' ? 'active' : ''}
+          >
+            Schedules
+          </Link>
+          <Link 
+            to="/alerts" 
+            className={location.pathname === '/alerts' ? 'active' : ''}
+          >
+            Alerts
+          </Link>
+          <Link 
+            to="/history" 
+            className={location.pathname === '/history' ? 'active' : ''}
+          >
+            History
+          </Link>
+          <Link 
             to="/results" 
             className={location.pathname === '/results' ? 'active' : ''}
           >
@@ -46,6 +67,9 @@ function App() {
           <Route path="/" element={<PromptSystemsList />} />
           <Route path="/create" element={<PromptSystemForm />} />
           <Route path="/test" element={<TestRunForm />} />
+          <Route path="/schedules" element={<TestSchedules />} />
+          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/history" element={<TestHistory />} />
           <Route path="/results" element={<TestResults />} />
         </Routes>
       </div>
