@@ -86,17 +86,15 @@ function TestRunForm() {
   }
 
   return (
-    <div>
-      <div className="card">
-        <h2>Run Test</h2>
-        
-        {message && (
-          <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
-            {message}
-          </div>
-        )}
+    <div className="run-test-container">      
+      {message && (
+        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+          {message}
+        </div>
+      )}
 
-        <form onSubmit={handleRunTest}>
+      <div className="test-form-container">
+        <form onSubmit={handleRunTest} className="test-form">
           <div className="form-group">
             <label>Select Prompt System:</label>
             <select 
@@ -115,90 +113,116 @@ function TestRunForm() {
 
           <div className="form-group">
             <label>Upload Regression Set (CSV or JSONL):</label>
-            <div className="file-upload" onClick={() => document.getElementById('file-input').click()}>
-              <input
-                id="file-input"
-                type="file"
-                accept=".csv,.jsonl"
-                onChange={handleFileUpload}
-                disabled={loading}
-                style={{ display: 'none' }}
-              />
-              <div style={{ fontSize: '24px', marginBottom: '10px' }}>📁</div>
-              <p style={{ fontWeight: 'bold', marginBottom: '5px' }}>
-                {file ? file.name : 'Click to select file'}
-              </p>
-              <p style={{ fontSize: '12px', color: '#666' }}>
-                File should contain columns for variables and an 'expected_output' column
-              </p>
-              {!file && (
-                <p style={{ fontSize: '11px', color: '#999', marginTop: '5px' }}>
-                  Supports .csv and .jsonl files
-                </p>
-              )}
+            <div className="file-upload-container">
+              <div className="file-upload" onClick={() => document.getElementById('file-input').click()}>
+                <input
+                  id="file-input"
+                  type="file"
+                  accept=".csv,.jsonl"
+                  onChange={handleFileUpload}
+                  disabled={loading}
+                  style={{ display: 'none' }}
+                />
+                <div className="upload-icon">📁</div>
+                <div className="upload-content">
+                  <p className="upload-title">
+                    {file ? file.name : 'Click to select file'}
+                  </p>
+                  <p className="upload-description">
+                    File should contain columns for variables and an 'expected_output' column
+                  </p>
+                  {!file && (
+                    <p className="upload-hint">
+                      Supports .csv and .jsonl files
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
           {regressionSet.length > 0 && (
             <div className="form-group">
               <label>Preview ({regressionSet.length} samples):</label>
-              <div style={{ maxHeight: '200px', overflow: 'auto', border: '1px solid #ddd', padding: '10px' }}>
-                <pre>{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
-                {regressionSet.length > 3 && <p>... and {regressionSet.length - 3} more samples</p>}
+              <div className="preview-container">
+                <pre className="preview-content">{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
+                {regressionSet.length > 3 && <p className="preview-more">... and {regressionSet.length - 3} more samples</p>}
               </div>
             </div>
           )}
 
-          <button 
-            type="submit" 
-            className="btn btn-success" 
-            disabled={loading || !selectedSystem || regressionSet.length === 0}
-          >
-            {loading ? 'Running Test...' : 'Run Test'}
-          </button>
+          <div className="form-actions">
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading || !selectedSystem || regressionSet.length === 0}
+            >
+              {loading ? (
+                <>
+                  <span className="btn-icon">⏳</span>
+                  Running Test...
+                  <span className="btn-icon"> ⏳</span>
+                </>
+              ) : (
+                <>
+                  <span className="btn-icon">🚀</span>
+                  Run Test
+                  <span className="btn-icon"> 🚀</span>
+                </>
+              )}
+            </button>
+          </div>
         </form>
       </div>
 
       {testResult && (
-        <div className="card">
-          <h3>Test Results</h3>
-          <div style={{ marginBottom: '20px' }}>
-            <strong>Average Score:</strong> 
-            <span className={`score ${getScoreClass(testResult.avg_score)}`}>
-              {(testResult.avg_score * 100).toFixed(1)}%
-            </span>
-            <br />
-            <strong>Total Samples:</strong> {testResult.total_samples}
+        <div className="results-container">
+          <div className="results-header">
+            <h3>Test Results</h3>
+            <div className="results-summary">
+              <div className="summary-item">
+                <span className="summary-label">Average Score:</span>
+                <span className={`score ${getScoreClass(testResult.avg_score)}`}>
+                  {(testResult.avg_score * 100).toFixed(1)}%
+                </span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Total Samples:</span>
+                <span className="summary-value">{testResult.total_samples}</span>
+              </div>
+            </div>
           </div>
 
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Sample</th>
-                <th>Expected Output</th>
-                <th>Predicted Output</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody>
-              {testResult.results.map((result, index) => (
-                <tr key={index}>
-                  <td>{result.sample_id}</td>
-                  <td style={{ maxWidth: '200px', wordBreak: 'break-word' }}>
-                    {result.expected_output}
-                  </td>
-                  <td style={{ maxWidth: '200px', wordBreak: 'break-word' }}>
-                    {result.predicted_output}
-                  </td>
-                  <td>
-                    <span className={`score ${getScoreClass(result.score)}`}>
-                      {(result.score * 100).toFixed(1)}%
-                    </span>
-                  </td>
+          <div className="results-table-container">
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th>Sample</th>
+                  <th>Expected Output</th>
+                  <th>Predicted Output</th>
+                  <th>Score</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {testResult.results.map((result, index) => (
+                  <tr key={index}>
+                    <td className="sample-id">{result.sample_id}</td>
+                    <td className="output-cell">
+                      {result.expected_output}
+                    </td>
+                    <td className="output-cell">
+                      {result.predicted_output}
+                    </td>
+                    <td className="score-cell">
+                      <span className={`score ${getScoreClass(result.score)}`}>
+                        {(result.score * 100).toFixed(1)}%
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

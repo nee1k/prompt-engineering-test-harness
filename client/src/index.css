@@ -1237,6 +1237,302 @@ body {
   }
 }
 
+/* Run Test Styles */
+.run-test-container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.test-header {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.test-header .header-content h2 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.test-form-container {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  margin-bottom: 24px;
+}
+
+.test-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.test-form .form-group {
+  margin-bottom: 0;
+}
+
+.test-form .form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.test-form .form-group select {
+  padding: 12px 16px;
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.test-form .form-group select:focus {
+  outline: none;
+  border-color: #007bff;
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.file-upload-container {
+  margin-top: 8px;
+}
+
+.file-upload {
+  border: 2px dashed #007bff;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: #f8f9ff;
+}
+
+.file-upload:hover {
+  border-color: #0056b3;
+  background-color: #f0f8ff;
+  transform: translateY(-1px);
+}
+
+.upload-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: #007bff;
+}
+
+.upload-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.upload-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin: 0;
+}
+
+.upload-description {
+  font-size: 14px;
+  color: #666;
+  margin: 0;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+
+.preview-container {
+  border: 2px solid #e9ecef;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #f8f9fa;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.preview-content {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0;
+  color: #333;
+}
+
+.preview-more {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  margin: 8px 0 0 0;
+}
+
+.results-container {
+  background: white;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.results-header {
+  margin-bottom: 24px;
+}
+
+.results-header h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.results-summary {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.summary-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summary-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+}
+
+.results-table-container {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+
+.results-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.results-table th {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 2px solid #e9ecef;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 12px;
+}
+
+.results-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e9ecef;
+  vertical-align: top;
+}
+
+.results-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.sample-id {
+  font-weight: 600;
+  color: #333;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.output-cell {
+  max-width: 300px;
+  word-break: break-word;
+  line-height: 1.4;
+  color: #555;
+}
+
+.score-cell {
+  text-align: center;
+  font-weight: 600;
+}
+
+.score {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.score.high {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.score.medium {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.score.low {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+/* Responsive Design for Run Test */
+@media (max-width: 768px) {
+  .run-test-container {
+    max-width: 100%;
+  }
+  
+  .test-form-container,
+  .results-container {
+    padding: 20px;
+  }
+  
+  .results-summary {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .file-upload {
+    padding: 24px;
+  }
+  
+  .upload-icon {
+    font-size: 36px;
+  }
+  
+  .results-table-container {
+    font-size: 12px;
+  }
+  
+  .results-table th,
+  .results-table td {
+    padding: 8px 12px;
+  }
+  
+  .output-cell {
+    max-width: 200px;
+  }
+}
 
 
 
