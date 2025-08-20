@@ -225,17 +225,25 @@ function TestSchedules() {
             </div>
 
             <div className="form-group">
-              <label>
-                <input
-                  type="checkbox"
-                  name="email_notifications"
-                  checked={formData.email_notifications}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    email_notifications: e.target.checked
-                  }))}
-                />
-                Enable Email Notifications
+              <label className="checkbox-label">
+                <div className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    name="email_notifications"
+                    checked={formData.email_notifications}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      email_notifications: e.target.checked
+                    }))}
+                    className="checkbox-input"
+                  />
+                  <div className="checkbox-custom">
+                    <svg className="checkbox-icon" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                </div>
+                <span className="checkbox-text">Enable Email Notifications</span>
               </label>
             </div>
 
