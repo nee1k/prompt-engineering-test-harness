@@ -359,7 +359,16 @@ function TestSchedules() {
                   <tr key={schedule.id} className="schedule-row">
                     <td className="schedule-name">{schedule.name}</td>
                     <td className="system-name">{schedule.prompt_system?.name || 'Unknown'}</td>
-                    <td className="interval">Every {schedule.interval_seconds} second(s)</td>
+                    <td className="interval">
+                      {schedule.interval_hours === 1 
+                        ? 'Every hour' 
+                        : schedule.interval_hours < 24 
+                          ? `Every ${schedule.interval_hours} hour(s)` 
+                          : schedule.interval_hours === 24 
+                            ? 'Daily' 
+                            : `Every ${Math.floor(schedule.interval_hours / 24)} day(s)`
+                      }
+                    </td>
                     <td className="status-cell">
                       <span className={`status-badge ${schedule.is_active ? 'active' : 'inactive'}`}>
                         {schedule.is_active ? 'Active' : 'Inactive'}
