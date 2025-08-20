@@ -1,42 +1,8 @@
 # LLM Prompt Evaluation Dashboard
 
-> **A lightweight, scalable application for monitoring and evaluating LLM prompt systems**
+> **A lightweight application for monitoring and evaluating LLM prompt systems**
 
-Define prompt templates, upload test datasets, and run automated evaluations with detailed scoring. Perfect for development teams, researchers, and anyone working with LLM applications.
-
-## 📋 Table of Contents
-
-- [✨ Features](#-features)
-- [🏗️ Architecture](#️-architecture)
-- [🚀 Quick Start](#-quick-start)
-- [📖 Usage Guide](#-usage-guide)
-- [🤖 Model Providers](#-model-providers)
-- [📝 Example Workflow](#-example-workflow)
-- [📄 File Formats](#-file-formats)
-- [🚀 Deployment & Scaling](#-deployment--scaling)
-- [🔧 Manual Setup](#-manual-setup)
-- [📊 Contributing](#-contributing)
-
-## ✨ Features
-
-- **🎯 Prompt System Management** - Create and save prompt templates with variable placeholders
-- **⚙️ Model Configuration** - Configure temperature, max_tokens, top_p for different LLM models
-- **📊 Regression Testing** - Upload CSV/JSONL files with test cases and expected outputs
-- **🤖 Automated Evaluation** - Run tests with fuzzy string matching and detailed scoring
-- **📈 Results Tracking** - View historical test runs and per-sample results
-- **🎨 Modern UI** - Clean React interface with real-time feedback
-- **🔌 Multi-Provider Support** - OpenAI (cloud) and Ollama (local) models
-- **📦 Containerized** - Production-ready with Docker and Kubernetes support
-
-## 🏗️ Architecture
-
-### Tech Stack
-- **Backend**: FastAPI (Python) with SQLAlchemy
-- **Frontend**: React + Vite
-- **Database**: SQLite (dev) / PostgreSQL (prod)
-- **Cache**: Redis (production)
-- **LLM Providers**: OpenAI API + Ollama
-- **Evaluation**: Fuzzy string similarity using difflib
+Define prompt templates, upload test datasets, and run automated evaluations with detailed scoring.
 
 ## 🚀 Quick Start
 
@@ -44,55 +10,30 @@ Define prompt templates, upload test datasets, and run automated evaluations wit
 - **Docker** and **Docker Compose**
 - **OpenAI API key** (optional - can use Ollama for local models)
 
-### Simple Setup
-
-1. **Clone the repository:**
+1. **Clone and start:**
    ```bash
    git clone https://github.com/nee1k/prompt-systems-monitor.git
    cd llm-prompt-evaluation-dashboard
-   ```
-
-2. **Configure environment (optional):**
-   ```bash
-   cp server/env.example .env
-   # Add your OpenAI API key to .env (only needed for OpenAI models)
-   ```
-
-3. **Start everything with Docker:**
-   ```bash
    docker-compose up -d
    ```
 
-4. **Access the application:**
+2. **Access the application:**
    - 🌐 **Frontend**: http://localhost
    - 📚 **API Docs**: http://localhost/api/docs
 
-That's it! The application is now running with PostgreSQL, Redis, and all services ready to use.
-
-### Development Setup
-
-For local development without Docker:
-
+### Environment Setup (Optional)
 ```bash
-# Install dependencies
-npm run install-all
-
-# Set up environment
-cd server && cp env.example .env
-
-# Start services
-npm run dev
+# Add your OpenAI API key (only needed for OpenAI models)
+echo "OPENAI_API_KEY=your_key_here" >> .env
 ```
 
-## 📖 Usage Guide
+## 📖 Usage
 
 ### 1. Create a Prompt System
-- Navigate to **"Create System"**
+- Go to **"Create System"**
 - Enter a **name** and **template** with `{variable}` placeholders
 - Define your **variables** (comma-separated)
-- Select a **model** from the available options
-- Choose your LLM **provider**
-- Configure **model parameters** (temperature, max_tokens, etc.)
+- Select a **model** and **provider** (OpenAI or Ollama)
 
 ```
 Template: "Translate the following text to {language}: {text}"
@@ -103,56 +44,32 @@ Model: GPT-3.5 Turbo
 
 ### 2. Run Tests
 - Select your **prompt system**
-- Upload your **regression set**: Upload a **CSV** or **JSONL** file with your test data. Ensure your file has columns for variables and an `expected_output` column
+- Upload a **CSV** or **JSONL** file with test data
 - Click **"Run Test"** to execute
 
 ```csv
 text,language,expected_output
 "Hello world","French","Bonjour le monde"
 "Good morning","Spanish","Buenos días"
-"Thank you","German","Danke"
 ```
 
+View results in **"Test Results"**
 
-View **historical results** in "Test Results"
+## 🔧 Tech Stack
 
-## 🔧 Advanced Setup
+- **Backend**: FastAPI (Python) with SQLAlchemy
+- **Frontend**: React + Vite
+- **Database**: PostgreSQL
+- **LLM Providers**: OpenAI API + Ollama
+- **Evaluation**: Fuzzy string similarity
 
-### Manual Installation (without Docker)
-
-If you prefer to run services manually:
-
-```bash
-# Backend
-cd server
-pip install -r requirements.txt
-cp env.example .env
-python run.py
-
-# Frontend (in another terminal)
-cd client
-npm install
-npm run dev
-```
-
-### Ollama Setup (for local models)
+## 🐳 Ollama Setup (Local Models)
 
 ```bash
-# Run the automated setup script
+# Automated setup
 python scripts/setup_ollama.py
 
-# Or manually install Ollama
+# Or manual installation
 # macOS: brew install ollama
 # Linux: curl -fsSL https://ollama.ai/install.sh | sh
 ```
-
-## 📄 File Formats
-
-### CSV Format
-- Headers should include variable names and `expected_output`
-- Example: `text,language,expected_output`
-
-### JSONL Format
-- Each line is a JSON object
-- Should include variable fields and `expected_output`
-- Example: `{"text": "Hello", "language": "French", "expected_output": "Bonjour"}`
