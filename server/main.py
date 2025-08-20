@@ -20,7 +20,7 @@ load_dotenv()
 # Initialize OpenAI client
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-app = FastAPI(title="Prompt Monitor - LLM System Monitor")
+app = FastAPI(title="LLM Prompt Evaluation Dashboard")
 
 # CORS middleware
 app.add_middleware(
@@ -115,7 +115,7 @@ async def call_llm(prompt: str, provider: str, model: str, temperature: float, m
 
 @app.get("/")
 async def root():
-    return {"message": "Prompt Monitor LLM System Monitor API"}
+    return {"message": "LLM Prompt Evaluation Dashboard API"}
 
 @app.get("/models/")
 async def get_available_models():

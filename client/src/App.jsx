@@ -11,7 +11,7 @@ function App() {
   return (
     <div>
       <header className="header">
-        <h1>Prompt Monitor - LLM System Monitor</h1>
+        <h1>LLM Prompt Evaluation Dashboard</h1>
       </header>
       
       <div className="container">

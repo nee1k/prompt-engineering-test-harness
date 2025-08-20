@@ -1,5 +1,5 @@
 {
-  "name": "prompt-monitor",
+  "name": "llm-prompt-evaluation-dashboard",
   "version": "1.0.0",
   "description": "A prompt system monitoring application for LLM evaluation",
   "main": "server/index.js",

@@ -1,5 +1,5 @@
 {
-  "name": "prompt-monitor-client",
+  "name": "llm-prompt-evaluation-dashboard-client",
   "private": true,
   "version": "0.0.0",
   "type": "module",

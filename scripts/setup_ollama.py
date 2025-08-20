@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Ollama Setup Script for Prompt Monitor
+Ollama Setup Script for LLM Prompt Evaluation Dashboard
 
-This script helps set up Ollama for use with the Prompt Monitor system.
+This script helps set up Ollama for use with the LLM Prompt Evaluation Dashboard.
 It checks if Ollama is installed, running, and pulls common models.
 """
 
@@ -115,7 +115,7 @@ def pull_model(model_name):
         return False
 
 def main():
-    print("🚀 Prompt Monitor Ollama Setup")
+    print("🚀 LLM Prompt Evaluation Dashboard Ollama Setup")
     print("=" * 40)
     
     # Check if Ollama is installed
@@ -177,7 +177,7 @@ def main():
             print(f"✓ {model} is already available")
     
     print("\n🎉 Ollama setup complete!")
-    print("\nYou can now use Ollama models in Prompt Monitor:")
+    print("\nYou can now use Ollama models in LLM Prompt Evaluation Dashboard:")
     print("1. Go to 'Create System'")
     print("2. Select 'Ollama (Local)' as provider")
     print("3. Choose from the available models")

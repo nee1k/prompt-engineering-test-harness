@@ -1,4 +1,4 @@
-# Prompt System Monitor
+# LLM Prompt Evaluation Dashboard
 
 > **A lightweight, scalable application for monitoring and evaluating LLM prompt systems**
 
@@ -49,7 +49,7 @@ Define prompt templates, upload test datasets, and run automated evaluations wit
 1. **Clone the repository:**
    ```bash
    git clone https://github.com/nee1k/prompt-systems-monitor.git
-   cd prompt-systems-monitor
+   cd llm-prompt-evaluation-dashboard
    ```
 
 2. **Configure environment (optional):**
@@ -88,26 +88,33 @@ npm run dev
 
 ### 1. Create a Prompt System
 - Navigate to **"Create System"**
-- Choose your **provider**: OpenAI (cloud) or Ollama (local)
-- Select a **model** from the available options
 - Enter a **name** and **template** with `{variable}` placeholders
 - Define your **variables** (comma-separated)
+- Select a **model** from the available options
+- Choose your LLM **provider**
 - Configure **model parameters** (temperature, max_tokens, etc.)
 
-### 2. Upload a Regression Set
-- Go to **"Run Test"**
-- Upload a **CSV** or **JSONL** file with your test data
-- Ensure your file has columns for variables and an `expected_output` column
+```
+Template: "Translate the following text to {language}: {text}"
+Variables: text, language
+Provider: OpenAI
+Model: GPT-3.5 Turbo
+```
 
-### 3. Run Tests
+### 2. Run Tests
 - Select your **prompt system**
-- Upload your **regression set**
+- Upload your **regression set**: Upload a **CSV** or **JSONL** file with your test data. Ensure your file has columns for variables and an `expected_output` column
 - Click **"Run Test"** to execute
 
-### 4. View Results
-- See **immediate results** after test completion
-- View **historical results** in "Test Results"
-- Analyze **per-sample scoring** and **aggregate metrics**
+```csv
+text,language,expected_output
+"Hello world","French","Bonjour le monde"
+"Good morning","Spanish","Buenos días"
+"Thank you","German","Danke"
+```
+
+
+View **historical results** in "Test Results"
 
 ## 🔧 Advanced Setup
 
@@ -139,30 +146,6 @@ python scripts/setup_ollama.py
 # Linux: curl -fsSL https://ollama.ai/install.sh | sh
 ```
 
-## 📝 Example Workflow
-
-### 1. Create a Prompt System
-```
-Template: "Translate the following text to {language}: {text}"
-Variables: text, language
-Provider: OpenAI
-Model: GPT-3.5 Turbo
-```
-
-### 2. Prepare Test Data (CSV)
-```csv
-text,language,expected_output
-"Hello world","French","Bonjour le monde"
-"Good morning","Spanish","Buenos días"
-"Thank you","German","Danke"
-```
-
-### 3. Run Tests & Analyze Results
-- Upload your regression set
-- Execute tests across all samples
-- Review per-sample scoring and aggregate metrics
-- Track performance over time
-
 ## 📄 File Formats
 
 ### CSV Format
@@ -173,20 +156,3 @@ text,language,expected_output
 - Each line is a JSON object
 - Should include variable fields and `expected_output`
 - Example: `{"text": "Hello", "language": "French", "expected_output": "Bonjour"}`
-
-## 🚀 Deployment & Scaling
-
-### Simple Production Deployment
-
-The Docker setup is production-ready out of the box:
-
-```bash
-# Clone and start
-git clone https://github.com/nee1k/prompt-systems-monitor.git
-cd prompt-systems-monitor
-docker-compose up -d
-
-# Access your application
-# Frontend: http://localhost
-# API: http://localhost/api/docs
-```
