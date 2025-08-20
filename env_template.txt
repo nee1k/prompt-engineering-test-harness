@@ -1,0 +1,12 @@
+OPENAI_API_KEY=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
+
+# Email Configuration (for notifications)
+# Update these with your actual SMTP credentials
+SMTP_SERVER=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=your_email@gmail.com
+
+# Ollama Configuration (optional)
+OLLAMA_HOST=host.docker.internal
