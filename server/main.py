@@ -120,20 +120,29 @@ async def root():
 @app.get("/models/")
 async def get_available_models():
     """Get available models for both providers"""
+    # Get actual available models from Ollama
+    ollama_models = []
+    try:
+        ollama_host = os.getenv("OLLAMA_HOST", "host.docker.internal")
+        async with httpx.AsyncClient() as client:
+            response = await client.get(f"http://{ollama_host}:11434/api/tags", timeout=5.0)
+            if response.status_code == 200:
+                models_data = response.json()
+                ollama_models = [
+                    {"id": model["name"], "name": model["name"]} 
+                    for model in models_data.get("models", [])
+                ]
+    except Exception as e:
+        print(f"Error fetching Ollama models: {e}")
+        # Fallback to empty list if Ollama is not available
+    
     return {
         "openai": [
             {"id": "gpt-3.5-turbo", "name": "GPT-3.5 Turbo"},
             {"id": "gpt-4", "name": "GPT-4"},
             {"id": "gpt-4-turbo", "name": "GPT-4 Turbo"}
         ],
-        "ollama": [
-            {"id": "llama3:8b", "name": "Llama 3 8B"},
-            {"id": "llama3:70b", "name": "Llama 3 70B"},
-            {"id": "mistral:7b", "name": "Mistral 7B"},
-            {"id": "phi3:mini", "name": "Phi-3 Mini"},
-            {"id": "qwen2.5:7b", "name": "Qwen 2.5 7B"},
-            {"id": "codellama:7b", "name": "Code Llama 7B"}
-        ]
+        "ollama": ollama_models
     }
 
 @app.get("/ollama/status/")
