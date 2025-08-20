@@ -2,7 +2,6 @@ import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
-import Alerts from './components/Alerts'
 
 
 function App() {
@@ -30,12 +29,6 @@ function App() {
           >
             Test Schedules
           </Link>
-          <Link 
-            to="/alerts" 
-            className={location.pathname === '/alerts' ? 'active' : ''}
-          >
-            Alerts
-          </Link>
 
           
         </nav>
@@ -43,7 +36,6 @@ function App() {
         <Routes>
           <Route path="/" element={<PromptSystemsList />} />
           <Route path="/schedules" element={<TestSchedules />} />
-          <Route path="/alerts" element={<Alerts />} />
         </Routes>
       </div>
     </div>

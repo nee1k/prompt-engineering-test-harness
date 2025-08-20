@@ -11,7 +11,7 @@ import os
 import httpx
 from dotenv import load_dotenv
 from database import engine, SessionLocal
-from models import Base, PromptSystem, TestRun, TestResult, TestSchedule, Alert
+from models import Base, PromptSystem, TestRun, TestResult, TestSchedule
 from sqlalchemy.orm import joinedload
 import uuid
 from datetime import datetime
@@ -63,6 +63,9 @@ class TestScheduleCreate(BaseModel):
     regression_set: List[Dict[str, Any]]
     interval_seconds: int
     evaluation_function: str = "fuzzy"  # "fuzzy", "exact", "semantic", "contains"
+    email_notifications: bool = False
+    email_recipients: List[str] = []
+    alert_threshold: float = 0.2
 
 class EvaluationResult(BaseModel):
     sample_id: str
@@ -444,6 +447,9 @@ async def create_test_schedule(schedule: TestScheduleCreate):
             regression_set=json.dumps(schedule.regression_set),
             interval_hours=schedule.interval_seconds // 3600,  # Convert seconds to hours for storage
             evaluation_function=schedule.evaluation_function,
+            email_notifications=schedule.email_notifications,
+            email_recipients=json.dumps(schedule.email_recipients) if schedule.email_recipients else None,
+            alert_threshold=schedule.alert_threshold,
             is_active=True,
             next_run_at=datetime.utcnow()
         )
@@ -501,29 +507,7 @@ async def delete_test_schedule(schedule_id: str):
     finally:
         db.close()
 
-# Alert endpoints
-@app.get("/alerts/")
-async def get_alerts():
-    db = SessionLocal()
-    try:
-        alerts = db.query(Alert).options(joinedload(Alert.test_run).joinedload(TestRun.prompt_system)).order_by(Alert.created_at.desc()).all()
-        return alerts
-    finally:
-        db.close()
 
-@app.put("/alerts/{alert_id}/resolve")
-async def resolve_alert(alert_id: str):
-    db = SessionLocal()
-    try:
-        alert = db.query(Alert).filter(Alert.id == alert_id).first()
-        if not alert:
-            raise HTTPException(status_code=404, detail="Alert not found")
-        
-        alert.is_resolved = True
-        db.commit()
-        return alert
-    finally:
-        db.close()
 
 # Time-series data endpoint
 @app.get("/test-runs/{prompt_system_id}/history")
@@ -572,6 +556,14 @@ async def startup_event():
         print("Evaluation function migration completed")
     except Exception as e:
         print(f"Evaluation function migration error: {e}")
+    
+    # Run email notification migration
+    try:
+        from migrate_email_notifications import migrate_email_notifications
+        migrate_email_notifications()
+        print("Email notification migration completed")
+    except Exception as e:
+        print(f"Email notification migration error: {e}")
     
     # Load existing schedules
     await scheduler.load_existing_schedules()

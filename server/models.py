@@ -34,7 +34,6 @@ class TestRun(Base):
     prompt_system = relationship("PromptSystem", back_populates="test_runs")
     test_schedule = relationship("TestSchedule", back_populates="test_runs")
     results = relationship("TestResult", back_populates="test_run")
-    alerts = relationship("Alert", back_populates="test_run")
 
 class TestResult(Base):
     __tablename__ = "test_results"
@@ -59,6 +58,9 @@ class TestSchedule(Base):
     regression_set = Column(Text)  # JSON string of regression set
     interval_hours = Column(Integer)  # Hours between runs
     evaluation_function = Column(String, default="fuzzy")  # Evaluation function to use
+    email_notifications = Column(Boolean, default=False)  # Enable email notifications
+    email_recipients = Column(Text, nullable=True)  # JSON array of email addresses
+    alert_threshold = Column(Float, default=0.2)  # Score drop threshold for alerts
     is_active = Column(Boolean, default=True)
     last_run_at = Column(DateTime, nullable=True)
     next_run_at = Column(DateTime, nullable=True)
@@ -67,15 +69,4 @@ class TestSchedule(Base):
     prompt_system = relationship("PromptSystem", back_populates="test_schedules")
     test_runs = relationship("TestRun", back_populates="test_schedule")
 
-class Alert(Base):
-    __tablename__ = "alerts"
 
-    id = Column(String, primary_key=True, index=True)
-    test_run_id = Column(String, ForeignKey("test_runs.id"))
-    alert_type = Column(String)  # "score_drop", "output_change", "failure"
-    message = Column(Text)
-    severity = Column(String)  # "low", "medium", "high"
-    is_resolved = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
-    test_run = relationship("TestRun", back_populates="alerts")

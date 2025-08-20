@@ -6,7 +6,8 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy.orm import Session
 from database import SessionLocal
-from models import TestSchedule, TestRun, TestResult, Alert, PromptSystem
+from models import TestSchedule, TestRun, TestResult, PromptSystem
+from email_service import email_service
 import uuid
 
 class TestScheduler:
@@ -66,7 +67,8 @@ class TestScheduler:
             # Process each sample
             results = []
             total_score = 0
-            alerts = []
+            failure_occurred = False
+            failure_message = ""
             
             for i, sample in enumerate(regression_set):
                 # Extract variables and expected output
@@ -91,15 +93,9 @@ class TestScheduler:
                         top_k=prompt_system.top_k
                     )
                 except Exception as e:
-                    # Create failure alert
-                    alert = Alert(
-                        id=str(uuid.uuid4()),
-                        test_run_id=test_run_id,
-                        alert_type="failure",
-                        message=f"LLM call failed for sample {i}: {str(e)}",
-                        severity="high"
-                    )
-                    alerts.append(alert)
+                    # Record failure for email notification
+                    failure_occurred = True
+                    failure_message = f"LLM call failed for sample {i}: {str(e)}"
                     continue
                 
                 # Evaluate
@@ -132,8 +128,11 @@ class TestScheduler:
             test_run.avg_score = avg_score
             test_run.total_samples = len(regression_set)
             
-            # Check for score drops and create alerts
-            if len(regression_set) > 0:
+            # Check for score drops and send email notifications
+            score_drop_occurred = False
+            prev_score = None
+            
+            if len(regression_set) > 0 and schedule.email_notifications:
                 # Get previous test run for comparison
                 prev_test_run = db.query(TestRun).filter(
                     TestRun.test_schedule_id == schedule_id,
@@ -141,20 +140,34 @@ class TestScheduler:
                 ).order_by(TestRun.created_at.desc()).first()
                 
                 if prev_test_run and prev_test_run.avg_score:
-                    score_drop = prev_test_run.avg_score - avg_score
-                    if score_drop > 0.2:  # 20% drop threshold
-                        alert = Alert(
-                            id=str(uuid.uuid4()),
-                            test_run_id=test_run_id,
-                            alert_type="score_drop",
-                            message=f"Score dropped by {score_drop:.2f} (from {prev_test_run.avg_score:.2f} to {avg_score:.2f})",
-                            severity="medium" if score_drop > 0.3 else "low"
-                        )
-                        alerts.append(alert)
+                    prev_score = prev_test_run.avg_score
+                    score_drop = prev_score - avg_score
+                    if score_drop > schedule.alert_threshold:
+                        score_drop_occurred = True
+                        
+                        # Send email notification
+                        recipients = json.loads(schedule.email_recipients) if schedule.email_recipients else []
+                        if recipients:
+                            email_service.send_score_drop_alert(
+                                recipients=recipients,
+                                schedule_name=schedule.name,
+                                test_run_id=test_run_id,
+                                avg_score=avg_score,
+                                prev_score=prev_score,
+                                total_samples=len(regression_set)
+                            )
             
-            # Add all alerts to database
-            for alert in alerts:
-                db.add(alert)
+            # Send failure notification if needed
+            if failure_occurred and schedule.email_notifications:
+                recipients = json.loads(schedule.email_recipients) if schedule.email_recipients else []
+                if recipients:
+                    email_service.send_failure_alert(
+                        recipients=recipients,
+                        schedule_name=schedule.name,
+                        test_run_id=test_run_id,
+                        error_message=failure_message,
+                        total_samples=len(regression_set)
+                    )
             
             # Update schedule
             schedule.last_run_at = datetime.utcnow()
@@ -162,7 +175,8 @@ class TestScheduler:
             
             db.commit()
             
-            print(f"Scheduled test completed for {schedule.name}: avg_score={avg_score}, alerts={len(alerts)}")
+            alert_status = "with email alerts" if (score_drop_occurred or failure_occurred) and schedule.email_notifications else "no alerts"
+            print(f"Scheduled test completed for {schedule.name}: avg_score={avg_score}, {alert_status}")
             
         except Exception as e:
             print(f"Error running scheduled test {schedule_id}: {e}")

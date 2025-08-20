@@ -15,7 +15,10 @@ function TestSchedules() {
     prompt_system_id: '',
     name: '',
     interval_seconds: 3600,
-    evaluation_function: 'fuzzy'
+    evaluation_function: 'fuzzy',
+    email_notifications: false,
+    email_recipients: '',
+    alert_threshold: 0.2
   });
 
   useEffect(() => {
@@ -83,16 +86,30 @@ function TestSchedules() {
       const uploadResponse = await axios.post(`${API_BASE}/upload-regression-set/`, formDataToSend);
       const regressionSet = uploadResponse.data.regression_set;
 
+      // Process email recipients
+      const emailRecipients = formData.email_notifications && formData.email_recipients
+        ? formData.email_recipients.split(',').map(email => email.trim()).filter(email => email)
+        : [];
+
       // Create schedule
       const scheduleData = {
         ...formData,
+        email_recipients: emailRecipients,
         regression_set: regressionSet
       };
 
       await axios.post(`${API_BASE}/test-schedules/`, scheduleData);
       
       setCreateScheduleModal(false);
-      setFormData({ prompt_system_id: '', name: '', interval_seconds: 3600, evaluation_function: 'fuzzy' });
+      setFormData({ 
+        prompt_system_id: '', 
+        name: '', 
+        interval_seconds: 3600, 
+        evaluation_function: 'fuzzy',
+        email_notifications: false,
+        email_recipients: '',
+        alert_threshold: 0.2
+      });
       setSelectedFile(null);
       fetchSchedules();
     } catch (error) {
@@ -206,6 +223,53 @@ function TestSchedules() {
                 ))}
               </select>
             </div>
+
+            <div className="form-group">
+              <label>
+                <input
+                  type="checkbox"
+                  name="email_notifications"
+                  checked={formData.email_notifications}
+                  onChange={(e) => setFormData(prev => ({
+                    ...prev,
+                    email_notifications: e.target.checked
+                  }))}
+                />
+                Enable Email Notifications
+              </label>
+            </div>
+
+            {formData.email_notifications && (
+              <>
+                <div className="form-group">
+                  <label>Email Recipients (comma-separated):</label>
+                  <input
+                    type="text"
+                    name="email_recipients"
+                    value={formData.email_recipients}
+                    onChange={handleInputChange}
+                    placeholder="user1@example.com, user2@example.com"
+                    required={formData.email_notifications}
+                  />
+                  <small>Enter email addresses separated by commas</small>
+                </div>
+
+                <div className="form-group">
+                  <label>Alert Threshold (score drop %):</label>
+                  <input
+                    type="number"
+                    name="alert_threshold"
+                    value={formData.alert_threshold}
+                    onChange={handleInputChange}
+                    min="0.01"
+                    max="1.0"
+                    step="0.01"
+                    required={formData.email_notifications}
+                  />
+                  <small>Send alert when score drops by this percentage (e.g., 0.2 = 20%)</small>
+                </div>
+              </>
+            )}
 
             <div className="form-group">
               <label>Regression Set File:</label>
