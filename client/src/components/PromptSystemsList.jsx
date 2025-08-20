@@ -17,7 +17,11 @@ function PromptSystemsList() {
   const fetchPromptSystems = async () => {
     try {
       const response = await axios.get(`${API_BASE}/prompt-systems/`)
-      setPromptSystems(response.data)
+      // Sort by creation date (latest first)
+      const sortedSystems = response.data.sort((a, b) => 
+        new Date(b.created_at) - new Date(a.created_at)
+      )
+      setPromptSystems(sortedSystems)
     } catch (error) {
       setError('Failed to fetch prompt systems')
       console.error('Error:', error)
@@ -49,7 +53,7 @@ function PromptSystemsList() {
               <th>Model</th>
               <th>Template</th>
               <th>Variables</th>
-              <th>Created</th>
+              <th>Created (Latest First)</th>
             </tr>
           </thead>
           <tbody>
@@ -75,7 +79,7 @@ function PromptSystemsList() {
                   </div>
                 </td>
                 <td>{JSON.parse(system.variables).join(', ')}</td>
-                <td>{new Date(system.created_at).toLocaleDateString()}</td>
+                <td>{new Date(system.created_at).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
