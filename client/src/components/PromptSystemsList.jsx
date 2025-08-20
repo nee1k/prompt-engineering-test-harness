@@ -15,6 +15,8 @@ function PromptSystemsList() {
   const [showDetailsModal, setShowDetailsModal] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
+  const [templateModal, setTemplateModal] = useState({ show: false, template: '', systemName: '', variables: [] })
+  const [systemMetrics, setSystemMetrics] = useState({})
 
   useEffect(() => {
     fetchPromptSystems()
@@ -28,12 +30,59 @@ function PromptSystemsList() {
         new Date(b.created_at) - new Date(a.created_at)
       )
       setPromptSystems(sortedSystems)
+      
+      // Fetch metrics for each system
+      for (const system of sortedSystems) {
+        fetchSystemMetrics(system.id)
+      }
     } catch (error) {
       setError('Failed to fetch prompt systems')
       console.error('Error:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const fetchSystemMetrics = async (systemId) => {
+    try {
+      const response = await axios.get(`${API_BASE}/test-runs/${systemId}/history`)
+      const history = response.data
+      
+      const avgScore = history.length > 0 
+        ? (history.reduce((sum, run) => sum + (run.avg_score || 0), 0) / history.length).toFixed(2)
+        : '0.00'
+      
+      const totalRuns = history.length
+      
+      let trend = 'stable'
+      if (history.length >= 2) {
+        const recent = history.slice(-3)
+        const older = history.slice(-6, -3)
+        
+        if (recent.length > 0 && older.length > 0) {
+          const recentAvg = recent.reduce((sum, run) => sum + (run.avg_score || 0), 0) / recent.length
+          const olderAvg = older.reduce((sum, run) => sum + (run.avg_score || 0), 0) / older.length
+          
+          if (recentAvg > olderAvg + 0.1) trend = 'improving'
+          else if (recentAvg < olderAvg - 0.1) trend = 'declining'
+        }
+      }
+      
+      setSystemMetrics(prev => ({
+        ...prev,
+        [systemId]: { avgScore, totalRuns, trend }
+      }))
+    } catch (error) {
+      console.error('Error fetching metrics for system:', systemId, error)
+      setSystemMetrics(prev => ({
+        ...prev,
+        [systemId]: { avgScore: '0.00', totalRuns: 0, trend: 'stable' }
+      }))
+    }
+  }
+
+  const getSystemMetrics = (systemId) => {
+    return systemMetrics[systemId] || { avgScore: '0.00', totalRuns: 0, trend: 'stable' }
   }
 
   const fetchHistory = async (promptSystemId, systemName) => {
@@ -66,30 +115,7 @@ function PromptSystemsList() {
     }
   }
 
-  const getAverageScore = () => {
-    if (historyModal.data.length === 0) return 0
-    const total = historyModal.data.reduce((sum, run) => sum + (run.avg_score || 0), 0)
-    return (total / historyModal.data.length).toFixed(2)
-  }
 
-  const getTotalRuns = () => {
-    return historyModal.data.length
-  }
-
-  const getTrend = () => {
-    if (historyModal.data.length < 2) return 'stable'
-    const recent = historyModal.data.slice(-3)
-    const older = historyModal.data.slice(-6, -3)
-    
-    if (recent.length === 0 || older.length === 0) return 'stable'
-    
-    const recentAvg = recent.reduce((sum, run) => sum + (run.avg_score || 0), 0) / recent.length
-    const olderAvg = older.reduce((sum, run) => sum + (run.avg_score || 0), 0) / older.length
-    
-    if (recentAvg > olderAvg + 0.1) return 'improving'
-    if (recentAvg < olderAvg - 0.1) return 'declining'
-    return 'stable'
-  }
 
   // Pagination calculations
   const totalPages = Math.ceil(historyModal.data.length / itemsPerPage)
@@ -104,6 +130,10 @@ function PromptSystemsList() {
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage)
     setCurrentPage(1) // Reset to first page
+  }
+
+  const showTemplate = (template, systemName, variables) => {
+    setTemplateModal({ show: true, template, systemName, variables })
   }
 
   const renderPagination = () => {
@@ -201,61 +231,103 @@ function PromptSystemsList() {
   }
 
   return (
-    <div className="card">
-      <h2>Prompt Systems</h2>
+    <div className="prompt-systems-container">
+      <div className="systems-header">
+        <div className="header-content">
+          <h2>Prompt Systems</h2>
+        </div>
+      </div>
       
       {promptSystems.length === 0 ? (
-        <p>No prompt systems found. Create your first one!</p>
+        <div className="empty-state">
+          <div className="empty-icon">📝</div>
+          <h3>No Prompt Systems Found</h3>
+          <p>Create your first prompt system to get started with testing and evaluation.</p>
+          <button className="btn btn-primary" onClick={() => window.location.href = '/create'}>
+            Create Your First System
+          </button>
+        </div>
       ) : (
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Provider</th>
-              <th>Model</th>
-              <th>Template</th>
-              <th>Variables</th>
-              <th>Created (UTC)</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {promptSystems.map((system) => (
-              <tr key={system.id}>
-                <td><strong>{system.name}</strong></td>
-                <td>
-                  <span style={{ 
-                    padding: '2px 8px', 
-                    borderRadius: '4px', 
-                    fontSize: '12px',
-                    backgroundColor: system.provider === 'openai' ? '#e3f2fd' : '#f3e5f5',
-                    color: system.provider === 'openai' ? '#1976d2' : '#7b1fa2'
-                  }}>
-                    {system.provider === 'openai' ? 'OpenAI' : 'Ollama'}
-                  </span>
-                </td>
-                <td>{system.model}</td>
-                <td>
-                  <div style={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {system.template.substring(0, 100)}
-                    {system.template.length > 100 && '...'}
-                  </div>
-                </td>
-                <td>{JSON.parse(system.variables).join(', ')}</td>
-                <td>{new Date(system.created_at).toLocaleString()}</td>
-                <td>
-                  <button 
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => fetchHistory(system.id, system.name)}
-                    disabled={historyLoading}
-                  >
-                    {historyLoading ? 'Loading...' : 'View History'}
-                  </button>
-                </td>
+        <div className="table-container">
+          <table className="systems-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Provider</th>
+                <th>Model</th>
+                <th>Created</th>
+                <th>Metrics</th>
+                <th></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {promptSystems.map((system) => (
+                <tr key={system.id} className="system-row">
+                  <td className="system-name-cell">
+                    <div className="name-content">
+                      <strong>{system.name}</strong>
+
+                    </div>
+                  </td>
+                  <td>
+                    <span className="provider-badge provider-{system.provider}" title={system.provider === 'openai' ? 'OpenAI' : 'Ollama'}>
+                      {system.provider === 'openai' ? (
+                        <img src="/logos/openai.svg" alt="OpenAI" width="16" height="16" />
+                      ) : (
+                        <img src="/logos/meta.png" alt="Ollama" width="16" height="16" />
+                      )}
+                    </span>
+                  </td>
+                  <td>
+                    <span className="model-badge">{system.model}</span>
+                  </td>
+                  <td>{new Date(system.created_at).toLocaleDateString()}</td>
+                  <td>
+                    <div className="metrics-display">
+                      <div className="metric-item">
+                        <span className="metric-label">Avg</span>
+                        <span className="metric-value score-{getSystemMetrics(system.id).avgScore >= 0.8 ? 'high' : getSystemMetrics(system.id).avgScore >= 0.6 ? 'medium' : 'low'}">
+                          {getSystemMetrics(system.id).avgScore}
+                        </span>
+                      </div>
+                      <div className="metric-item">
+                        <span className="metric-label">Runs</span>
+                        <span className="metric-value">{getSystemMetrics(system.id).totalRuns}</span>
+                      </div>
+                      <div className="metric-item">
+                        <span className="metric-label">Trend</span>
+                        <span className="metric-value trend-{getSystemMetrics(system.id).trend}">
+                          {getSystemMetrics(system.id).trend}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="action-buttons">
+                      <button 
+                        className="btn btn-outline btn-sm"
+                        onClick={() => showTemplate(system.template, system.name, JSON.parse(system.variables))}
+                        title="View Template"
+                      >
+                        <span className="btn-icon">📄</span>
+                        Template
+                      </button>
+                      <button 
+                        className="btn btn-outline btn-sm"
+                        onClick={() => fetchHistory(system.id, system.name)}
+                        disabled={historyLoading}
+                        title="View History"
+                      >
+                        <span className="btn-icon">📊</span>
+                        History
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       {/* History Modal */}
@@ -276,23 +348,6 @@ function PromptSystemsList() {
                 <p>No test history found for this prompt system.</p>
               ) : (
                 <>
-                  <div className="metrics-grid">
-                    <div className="metric-card">
-                      <h3>Average Score</h3>
-                      <div className="metric-value">{getAverageScore()}</div>
-                    </div>
-                    <div className="metric-card">
-                      <h3>Total Runs</h3>
-                      <div className="metric-value">{getTotalRuns()}</div>
-                    </div>
-                    <div className="metric-card">
-                      <h3>Trend</h3>
-                      <div className={`metric-value trend-${getTrend()}`}>
-                        {getTrend().charAt(0).toUpperCase() + getTrend().slice(1)}
-                      </div>
-                    </div>
-                  </div>
-
                   <div className="history-table">
                     <div className="table-header">
                       <h3>Recent Test Runs</h3>
@@ -432,6 +487,65 @@ function PromptSystemsList() {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template Modal */}
+      {templateModal.show && (
+        <div className="modal-overlay" onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Template - {templateModal.systemName}</h3>
+              <button 
+                className="btn-close"
+                onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <div style={{ marginBottom: '20px' }}>
+                <h4>Variables</h4>
+                <div style={{ 
+                  background: '#e3f2fd', 
+                  padding: '10px', 
+                  borderRadius: '4px',
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '8px'
+                }}>
+                  {templateModal.variables.map((variable, index) => (
+                    <span key={index} style={{
+                      background: '#1976d2',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      fontWeight: '500'
+                    }}>
+                      {variable}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <h4>Template</h4>
+                <div style={{ 
+                  background: '#f8f9fa', 
+                  padding: '15px', 
+                  borderRadius: '4px', 
+                  fontFamily: 'monospace',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  maxHeight: '400px',
+                  overflowY: 'auto'
+                }}>
+                  {templateModal.template}
                 </div>
               </div>
             </div>
