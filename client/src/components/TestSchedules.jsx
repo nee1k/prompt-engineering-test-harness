@@ -117,21 +117,38 @@ function TestSchedules() {
   if (error) return <div className="error">Error: {error}</div>;
 
   return (
-    <div className="test-schedules">
-      <div className="header">
-        <h2>Test Schedules</h2>
-        <button 
-          className="btn btn-primary"
-          onClick={() => setShowCreateForm(!showCreateForm)}
-        >
-          {showCreateForm ? 'Cancel' : 'Create Schedule'}
-        </button>
+    <div className="schedules-container">
+      <div className="schedules-header">
+        <div className="header-actions">
+          <button 
+            className="btn btn-primary"
+            onClick={() => setShowCreateForm(!showCreateForm)}
+          >
+            {showCreateForm ? (
+              <>
+                <span className="btn-icon">✕</span>
+                Cancel
+              </>
+            ) : (
+              <>
+                <span className="btn-icon">➕</span>
+                Create Schedule
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
       {showCreateForm && (
-        <div className="create-form">
-          <h3>Create New Schedule</h3>
-          <form onSubmit={handleSubmit}>
+        <div className="schedule-form-container">
+          <div className="schedule-form-header">
+            <h3>Create New Schedule</h3>
+            <div className="form-info">
+              <span className="info-icon">📅</span>
+              <span className="info-text">Set up automated testing for your prompt systems</span>
+            </div>
+          </div>
+          <form onSubmit={handleSubmit} className="schedule-form">
             <div className="form-group">
               <label>Prompt System:</label>
               <select
@@ -177,78 +194,109 @@ function TestSchedules() {
 
             <div className="form-group">
               <label>Regression Set File:</label>
-              <input
-                type="file"
-                accept=".csv,.jsonl"
-                onChange={handleFileChange}
-                required
-              />
+              <div className="file-upload-container">
+                <div className="file-upload" onClick={() => document.getElementById('schedule-file-input').click()}>
+                  <input
+                    id="schedule-file-input"
+                    type="file"
+                    accept=".csv,.jsonl"
+                    onChange={handleFileChange}
+                    required
+                    style={{ display: 'none' }}
+                  />
+                  <div className="upload-icon">📁</div>
+                  <div className="upload-content">
+                    <p className="upload-title">
+                      {selectedFile ? selectedFile.name : 'Click to select file'}
+                    </p>
+                    <p className="upload-description">
+                      File should contain columns for variables and an 'expected_output' column
+                    </p>
+                    {!selectedFile && (
+                      <p className="upload-hint">
+                        Supports .csv and .jsonl files
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <button type="submit" className="btn btn-primary">
-              Create Schedule
-            </button>
+            <div className="form-actions">
+              <button type="submit" className="btn btn-primary">
+                <span className="btn-icon">✨</span>
+                Create Schedule
+              </button>
+            </div>
           </form>
         </div>
       )}
 
-      <div className="schedules-list">
+      <div className="schedules-list-container">
         {schedules.length === 0 ? (
-          <p>No schedules found. Create one to get started!</p>
+          <div className="empty-state">
+            <div className="empty-icon">⏰</div>
+            <h3>No schedules found</h3>
+            <p>Create your first schedule to automate testing</p>
+          </div>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Prompt System</th>
-                <th>Interval</th>
-                <th>Status</th>
-                <th>Last Run</th>
-                <th>Next Run</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {schedules.map(schedule => (
-                <tr key={schedule.id}>
-                  <td>{schedule.name}</td>
-                  <td>{schedule.prompt_system?.name || 'Unknown'}</td>
-                  <td>Every {schedule.interval_hours * 3600} second(s)</td>
-                  <td>
-                    <span className={`status ${schedule.is_active ? 'active' : 'inactive'}`}>
-                      {schedule.is_active ? 'Active' : 'Inactive'}
-                    </span>
-                  </td>
-                  <td>
-                    {schedule.last_run_at 
-                      ? new Date(schedule.last_run_at).toLocaleString()
-                      : 'Never'
-                    }
-                  </td>
-                  <td>
-                    {schedule.next_run_at 
-                      ? new Date(schedule.next_run_at).toLocaleString()
-                      : 'N/A'
-                    }
-                  </td>
-                  <td>
-                    <button
-                      className={`btn btn-sm ${schedule.is_active ? 'btn-warning' : 'btn-success'}`}
-                      onClick={() => toggleSchedule(schedule.id)}
-                    >
-                      {schedule.is_active ? 'Pause' : 'Resume'}
-                    </button>
-                    <button
-                      className="btn btn-sm btn-danger"
-                      onClick={() => deleteSchedule(schedule.id)}
-                    >
-                      Delete
-                    </button>
-                  </td>
+          <div className="schedules-table-container">
+            <table className="schedules-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Prompt System</th>
+                  <th>Interval</th>
+                  <th>Status</th>
+                  <th>Last Run</th>
+                  <th>Next Run</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {schedules.map(schedule => (
+                  <tr key={schedule.id} className="schedule-row">
+                    <td className="schedule-name">{schedule.name}</td>
+                    <td className="system-name">{schedule.prompt_system?.name || 'Unknown'}</td>
+                    <td className="interval">Every {schedule.interval_seconds} second(s)</td>
+                    <td className="status-cell">
+                      <span className={`status-badge ${schedule.is_active ? 'active' : 'inactive'}`}>
+                        {schedule.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                    </td>
+                    <td className="last-run">
+                      {schedule.last_run_at 
+                        ? new Date(schedule.last_run_at).toLocaleString()
+                        : 'Never'
+                      }
+                    </td>
+                    <td className="next-run">
+                      {schedule.next_run_at 
+                        ? new Date(schedule.next_run_at).toLocaleString()
+                        : 'N/A'
+                      }
+                    </td>
+                    <td className="actions">
+                      <div className="action-buttons">
+                        <button
+                          className={`btn btn-sm ${schedule.is_active ? 'btn-warning' : 'btn-success'}`}
+                          onClick={() => toggleSchedule(schedule.id)}
+                        >
+                          {schedule.is_active ? '⏸️ Pause' : '▶️ Resume'}
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => deleteSchedule(schedule.id)}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
     </div>

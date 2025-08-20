@@ -5,7 +5,7 @@ const API_BASE = window.location.hostname === 'localhost' && window.location.por
   ? 'http://localhost:8000' 
   : '/api'
 
-function PromptSystemForm() {
+function PromptSystemForm({ onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     template: '',
@@ -92,6 +92,11 @@ function PromptSystemForm() {
         top_p: 1.0,
         top_k: null
       })
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess()
+      }
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.detail || error.message}`)
     } finally {

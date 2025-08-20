@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import PromptSystemForm from './PromptSystemForm'
 
 const API_BASE = window.location.hostname === 'localhost' && window.location.port === '3000' 
   ? 'http://localhost:8000' 
@@ -17,6 +18,7 @@ function PromptSystemsList() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [templateModal, setTemplateModal] = useState({ show: false, template: '', systemName: '', variables: [] })
   const [systemMetrics, setSystemMetrics] = useState({})
+  const [createSystemModal, setCreateSystemModal] = useState(false)
 
   useEffect(() => {
     fetchPromptSystems()
@@ -83,6 +85,21 @@ function PromptSystemsList() {
 
   const getSystemMetrics = (systemId) => {
     return systemMetrics[systemId] || { avgScore: '0.00', totalRuns: 0, trend: 'stable' }
+  }
+
+  // Pagination functions for main systems list
+  const indexOfLastItem = currentPage * itemsPerPage
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage
+  const currentItems = promptSystems.slice(indexOfFirstItem, indexOfLastItem)
+  const totalPagesMain = Math.ceil(promptSystems.length / itemsPerPage)
+
+  const handlePageChangeMain = (pageNumber) => {
+    setCurrentPage(pageNumber)
+  }
+
+  const handleItemsPerPageChangeMain = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage)
+    setCurrentPage(1) // Reset to first page
   }
 
   const fetchHistory = async (promptSystemId, systemName) => {
@@ -238,7 +255,7 @@ function PromptSystemsList() {
           <div className="empty-icon">📝</div>
           <h3>No Prompt Systems Found</h3>
           <p>Create your first prompt system to get started with testing and evaluation.</p>
-          <button className="btn btn-primary" onClick={() => window.location.href = '/create'}>
+          <button className="btn btn-primary" onClick={() => setCreateSystemModal(true)}>
             Create Your First System
           </button>
         </div>
@@ -256,7 +273,7 @@ function PromptSystemsList() {
               </tr>
             </thead>
             <tbody>
-              {promptSystems.map((system) => (
+              {currentItems.map((system) => (
                 <tr key={system.id} className="system-row">
                   <td className="system-name-cell">
                     <div className="name-content">
@@ -322,8 +339,73 @@ function PromptSystemsList() {
               ))}
             </tbody>
           </table>
+          
+          {/* Pagination Controls */}
+          {totalPagesMain > 1 && (
+            <div className="pagination-container">
+              <div className="pagination-info">
+                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, promptSystems.length)} of {promptSystems.length} systems
+              </div>
+              <div className="pagination-controls">
+                <div className="pagination-buttons">
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handlePageChangeMain(currentPage - 1)}
+                    disabled={currentPage === 1}
+                  >
+                    ← Previous
+                  </button>
+                  
+                  {Array.from({ length: totalPagesMain }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      className={`btn btn-sm ${page === currentPage ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={() => handlePageChangeMain(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  
+                  <button
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handlePageChangeMain(currentPage + 1)}
+                    disabled={currentPage === totalPagesMain}
+                  >
+                    Next →
+                  </button>
+                </div>
+                
+                <div className="pagination-size">
+                  <label>
+                    Items per page:
+                    <select
+                      value={itemsPerPage}
+                      onChange={(e) => handleItemsPerPageChangeMain(parseInt(e.target.value))}
+                      className="form-control-sm"
+                    >
+                      <option value={5}>5</option>
+                      <option value={10}>10</option>
+                      <option value={25}>25</option>
+                      <option value={50}>50</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
+      
+      {/* Create System Button */}
+      <div className="create-system-section">
+        <button 
+          className="btn btn-primary btn-large"
+          onClick={() => setCreateSystemModal(true)}
+        >
+          <span className="btn-icon">➕</span>
+          Create New Prompt System
+        </button>
+      </div>
 
       {/* History Modal */}
       {historyModal.show && (
@@ -543,6 +625,31 @@ function PromptSystemsList() {
                   {templateModal.template}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create System Modal */}
+      {createSystemModal && (
+        <div className="modal-overlay" onClick={() => setCreateSystemModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+            <div className="modal-header">
+              <h3>Create Prompt System</h3>
+              <button 
+                className="btn-close"
+                onClick={() => setCreateSystemModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <PromptSystemForm 
+                onSuccess={() => {
+                  setCreateSystemModal(false)
+                  fetchPromptSystems()
+                }}
+              />
             </div>
           </div>
         </div>
