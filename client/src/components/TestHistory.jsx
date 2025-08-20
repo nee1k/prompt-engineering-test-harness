@@ -10,6 +10,10 @@ function TestHistory() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [days, setDays] = useState(7);
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
   useEffect(() => {
     fetchPromptSystems();
@@ -18,6 +22,7 @@ function TestHistory() {
   useEffect(() => {
     if (selectedSystem) {
       fetchHistory();
+      setCurrentPage(1); // Reset to first page when system changes
     }
   }, [selectedSystem, days]);
 
@@ -68,7 +73,106 @@ function TestHistory() {
     return 'stable';
   };
 
+  // Pagination calculations
+  const totalPages = Math.ceil(history.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentHistory = history.slice(startIndex, endIndex);
 
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  const handleItemsPerPageChange = (newItemsPerPage) => {
+    setItemsPerPage(newItemsPerPage);
+    setCurrentPage(1); // Reset to first page
+  };
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+
+    const pages = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Previous button
+    if (currentPage > 1) {
+      pages.push(
+        <button
+          key="prev"
+          className="btn btn-sm btn-secondary"
+          onClick={() => handlePageChange(currentPage - 1)}
+        >
+          ← Previous
+        </button>
+      );
+    }
+
+    // First page
+    if (startPage > 1) {
+      pages.push(
+        <button
+          key="1"
+          className="btn btn-sm btn-secondary"
+          onClick={() => handlePageChange(1)}
+        >
+          1
+        </button>
+      );
+      if (startPage > 2) {
+        pages.push(<span key="ellipsis1" className="pagination-ellipsis">...</span>);
+      }
+    }
+
+    // Visible pages
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          className={`btn btn-sm ${i === currentPage ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => handlePageChange(i)}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    // Last page
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        pages.push(<span key="ellipsis2" className="pagination-ellipsis">...</span>);
+      }
+      pages.push(
+        <button
+          key={totalPages}
+          className="btn btn-sm btn-secondary"
+          onClick={() => handlePageChange(totalPages)}
+        >
+          {totalPages}
+        </button>
+      );
+    }
+
+    // Next button
+    if (currentPage < totalPages) {
+      pages.push(
+        <button
+          key="next"
+          className="btn btn-sm btn-secondary"
+          onClick={() => handlePageChange(currentPage + 1)}
+        >
+          Next →
+        </button>
+      );
+    }
+
+    return pages;
+  };
 
   if (error) return <div className="error">Error: {error}</div>;
 
@@ -126,31 +230,59 @@ function TestHistory() {
                 </div>
               </div>
 
-
-
               <div className="history-table">
-                <h3>Recent Test Runs</h3>
+                <div className="table-header">
+                  <h3>Recent Test Runs</h3>
+                  <div className="table-controls">
+                    <label>
+                      Items per page:
+                      <select
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
+                        className="form-control-sm"
+                      >
+                        <option value={5}>5</option>
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                      </select>
+                    </label>
+                  </div>
+                </div>
+                
                 {history.length === 0 ? (
                   <p>No test runs found in the selected time period.</p>
                 ) : (
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>Score</th>
-                        <th>Samples</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {history.map(run => (
-                        <tr key={run.id}>
-                          <td>{new Date(run.created_at).toLocaleString()}</td>
-                          <td>{(run.avg_score || 0).toFixed(2)}</td>
-                          <td>{run.total_samples || 0}</td>
+                  <>
+                    <table>
+                      <thead>
+                        <tr>
+                          <th>Date</th>
+                          <th>Score</th>
+                          <th>Samples</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {currentHistory.map(run => (
+                          <tr key={run.id}>
+                            <td>{new Date(run.created_at).toLocaleString()}</td>
+                            <td>{(run.avg_score || 0).toFixed(2)}</td>
+                            <td>{run.total_samples || 0}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    
+                    <div className="pagination-info">
+                      <span>
+                        Showing {startIndex + 1} to {Math.min(endIndex, history.length)} of {history.length} results
+                      </span>
+                    </div>
+                    
+                    <div className="pagination">
+                      {renderPagination()}
+                    </div>
+                  </>
                 )}
               </div>
             </>
