@@ -104,16 +104,15 @@ function PromptSystemForm() {
   }
 
   return (
-    <div className="card">
-      <h2>Create Prompt System</h2>
-      
+    <div className="create-system-container">      
       {message && (
         <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
           {message}
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
+      <div className="form-container">
+        <form onSubmit={handleSubmit} className="create-form">
         <div className="form-group">
           <label>Name:</label>
           <input
@@ -151,16 +150,16 @@ function PromptSystemForm() {
 
         <div className="form-group">
           <label>Provider:</label>
-          <select name="provider" value={formData.provider} onChange={handleProviderChange}>
+          <select name="provider" value={formData.provider} onChange={handleProviderChange} className="provider-select">
             <option value="openai">OpenAI</option>
             <option value="ollama">Ollama (Local)</option>
           </select>
           {formData.provider === 'ollama' && ollamaStatus && (
-            <div style={{ marginTop: '5px', fontSize: '12px' }}>
+            <div className="ollama-status">
               {ollamaStatus.status === 'running' ? (
-                <span style={{ color: 'green' }}>✓ Ollama is running</span>
+                <span className="status-success">✓ Ollama is running</span>
               ) : (
-                <span style={{ color: 'red' }}>✗ Ollama is not running</span>
+                <span className="status-error">✗ Ollama is not running</span>
               )}
             </div>
           )}
@@ -215,11 +214,25 @@ function PromptSystemForm() {
           />
         </div>
 
-        <button type="submit" className="btn btn-success" disabled={loading}>
-          {loading ? 'Creating...' : 'Create Prompt System'}
-        </button>
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary" disabled={loading} align="center">
+            {loading ? (
+              <>
+                <span className="btn-icon">⏳</span>
+                Creating...
+              </>
+            ) : (
+              <>
+                <span className="btn-icon">✨</span>
+                Create Prompt System
+                <span className="btn-icon"> ✨</span>
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
+  </div>
   )
 }
 

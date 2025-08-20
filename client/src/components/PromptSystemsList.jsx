@@ -232,11 +232,6 @@ function PromptSystemsList() {
 
   return (
     <div className="prompt-systems-container">
-      <div className="systems-header">
-        <div className="header-content">
-          <h2>Prompt Systems</h2>
-        </div>
-      </div>
       
       {promptSystems.length === 0 ? (
         <div className="empty-state">
