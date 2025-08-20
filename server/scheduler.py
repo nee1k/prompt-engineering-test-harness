@@ -103,7 +103,7 @@ class TestScheduler:
                     continue
                 
                 # Evaluate
-                score = evaluate_output(predicted_output, expected_output)
+                score = evaluate_output(predicted_output, expected_output, schedule.evaluation_function)
                 total_score += score
                 
                 # Store result
@@ -115,7 +115,7 @@ class TestScheduler:
                     expected_output=expected_output,
                     predicted_output=predicted_output,
                     score=score,
-                    evaluation_method="fuzzy"
+                    evaluation_method=schedule.evaluation_function
                 )
                 db.add(db_result)
                 

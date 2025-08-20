@@ -13,9 +13,12 @@ function TestRunForm() {
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [testResult, setTestResult] = useState(null)
+  const [evaluationFunctions, setEvaluationFunctions] = useState([])
+  const [selectedEvaluationFunction, setSelectedEvaluationFunction] = useState('fuzzy')
 
   useEffect(() => {
     fetchPromptSystems()
+    fetchEvaluationFunctions()
   }, [])
 
   const fetchPromptSystems = async () => {
@@ -24,6 +27,15 @@ function TestRunForm() {
       setPromptSystems(response.data)
     } catch (error) {
       console.error('Error fetching prompt systems:', error)
+    }
+  }
+
+  const fetchEvaluationFunctions = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/evaluation-functions/`)
+      setEvaluationFunctions(response.data.evaluation_functions)
+    } catch (error) {
+      console.error('Error fetching evaluation functions:', error)
     }
   }
 
@@ -67,7 +79,8 @@ function TestRunForm() {
     try {
       const response = await axios.post(`${API_BASE}/test-runs/`, {
         prompt_system_id: selectedSystem,
-        regression_set: regressionSet
+        regression_set: regressionSet,
+        evaluation_function: selectedEvaluationFunction
       })
       
       setTestResult(response.data)
@@ -106,6 +119,21 @@ function TestRunForm() {
               {promptSystems.map((system) => (
                 <option key={system.id} value={system.id}>
                   {system.name} ({system.model})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Evaluation Function:</label>
+            <select 
+              value={selectedEvaluationFunction} 
+              onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
+              required
+            >
+              {evaluationFunctions.map((func) => (
+                <option key={func.id} value={func.id}>
+                  {func.name} - {func.description}
                 </option>
               ))}
             </select>

@@ -55,12 +55,14 @@ class PromptSystemCreate(BaseModel):
 class TestRunCreate(BaseModel):
     prompt_system_id: str
     regression_set: List[Dict[str, Any]]
+    evaluation_function: str = "fuzzy"  # "fuzzy", "exact", "semantic"
 
 class TestScheduleCreate(BaseModel):
     prompt_system_id: str
     name: str
     regression_set: List[Dict[str, Any]]
     interval_seconds: int
+    evaluation_function: str = "fuzzy"  # "fuzzy", "exact", "semantic", "contains"
 
 class EvaluationResult(BaseModel):
     sample_id: str
@@ -253,11 +255,25 @@ async def upload_regression_set(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail=f"Error parsing file: {str(e)}")
 
 def evaluate_output(predicted: str, expected: str, method: str = "fuzzy") -> float:
-    """Simple evaluation function using fuzzy string matching"""
+    """Evaluate output using different methods"""
     if method == "fuzzy":
-        return difflib.SequenceMatcher(None, predicted.lower(), expected.lower()).ratio()
+        # Fuzzy string matching using sequence matcher
+        return difflib.SequenceMatcher(None, predicted.lower().strip(), expected.lower().strip()).ratio()
     elif method == "exact":
-        return 1.0 if predicted.strip() == expected.strip() else 0.0
+        # Exact string match (case-insensitive)
+        return 1.0 if predicted.lower().strip() == expected.lower().strip() else 0.0
+    elif method == "semantic":
+        # Semantic similarity using word overlap
+        predicted_words = set(predicted.lower().strip().split())
+        expected_words = set(expected.lower().strip().split())
+        if not expected_words:
+            return 1.0 if not predicted_words else 0.0
+        intersection = predicted_words.intersection(expected_words)
+        union = predicted_words.union(expected_words)
+        return len(intersection) / len(union) if union else 0.0
+    elif method == "contains":
+        # Check if expected output is contained in predicted output
+        return 1.0 if expected.lower().strip() in predicted.lower().strip() else 0.0
     else:
         return 0.0
 
@@ -297,7 +313,7 @@ async def create_test_run(test_run: TestRunCreate):
             )
             
             # Evaluate
-            score = evaluate_output(predicted_output, expected_output)
+            score = evaluate_output(predicted_output, expected_output, test_run.evaluation_function)
             total_score += score
             
             results.append({
@@ -306,7 +322,7 @@ async def create_test_run(test_run: TestRunCreate):
                 "expected_output": expected_output,
                 "predicted_output": predicted_output,
                 "score": score,
-                "evaluation_method": "fuzzy"
+                "evaluation_method": test_run.evaluation_function
             })
         
         # Only create database records after all samples are processed successfully
@@ -381,6 +397,34 @@ async def get_test_runs():
     finally:
         db.close()
 
+@app.get("/evaluation-functions/")
+async def get_evaluation_functions():
+    """Get available evaluation functions"""
+    return {
+        "evaluation_functions": [
+            {
+                "id": "fuzzy",
+                "name": "Fuzzy Match",
+                "description": "Fuzzy string matching using sequence similarity"
+            },
+            {
+                "id": "exact",
+                "name": "Exact Match",
+                "description": "Exact string match (case-insensitive)"
+            },
+            {
+                "id": "semantic",
+                "name": "Semantic Similarity",
+                "description": "Word overlap similarity (Jaccard index)"
+            },
+            {
+                "id": "contains",
+                "name": "Contains",
+                "description": "Check if expected output is contained in predicted output"
+            }
+        ]
+    }
+
 # Test Schedule endpoints
 @app.post("/test-schedules/")
 async def create_test_schedule(schedule: TestScheduleCreate):
@@ -399,6 +443,7 @@ async def create_test_schedule(schedule: TestScheduleCreate):
             name=schedule.name,
             regression_set=json.dumps(schedule.regression_set),
             interval_hours=schedule.interval_seconds // 3600,  # Convert seconds to hours for storage
+            evaluation_function=schedule.evaluation_function,
             is_active=True,
             next_run_at=datetime.utcnow()
         )
@@ -512,13 +557,21 @@ async def get_test_run_history(prompt_system_id: str, days: int = 7):
 # Initialize scheduler on startup
 @app.on_event("startup")
 async def startup_event():
-    # Run database migration
+    # Run database migrations
     try:
         from migrate import run_migration
         run_migration()
         print("Database migration completed")
     except Exception as e:
         print(f"Migration error: {e}")
+    
+    # Run evaluation function migration
+    try:
+        from migrate_evaluation_function import migrate_evaluation_function
+        migrate_evaluation_function()
+        print("Evaluation function migration completed")
+    except Exception as e:
+        print(f"Evaluation function migration error: {e}")
     
     # Load existing schedules
     await scheduler.load_existing_schedules()

@@ -58,6 +58,7 @@ class TestSchedule(Base):
     name = Column(String)
     regression_set = Column(Text)  # JSON string of regression set
     interval_hours = Column(Integer)  # Hours between runs
+    evaluation_function = Column(String, default="fuzzy")  # Evaluation function to use
     is_active = Column(Boolean, default=True)
     last_run_at = Column(DateTime, nullable=True)
     next_run_at = Column(DateTime, nullable=True)

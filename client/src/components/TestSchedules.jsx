@@ -6,6 +6,7 @@ const API_BASE = window.location.hostname === 'localhost' ? 'http://localhost:80
 function TestSchedules() {
   const [schedules, setSchedules] = useState([]);
   const [promptSystems, setPromptSystems] = useState([]);
+  const [evaluationFunctions, setEvaluationFunctions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [createScheduleModal, setCreateScheduleModal] = useState(false);
@@ -13,12 +14,14 @@ function TestSchedules() {
   const [formData, setFormData] = useState({
     prompt_system_id: '',
     name: '',
-    interval_seconds: 3600
+    interval_seconds: 3600,
+    evaluation_function: 'fuzzy'
   });
 
   useEffect(() => {
     fetchSchedules();
     fetchPromptSystems();
+    fetchEvaluationFunctions();
   }, []);
 
   const fetchSchedules = async () => {
@@ -39,6 +42,15 @@ function TestSchedules() {
       setPromptSystems(response.data);
     } catch (error) {
       console.error('Error fetching prompt systems:', error);
+    }
+  };
+
+  const fetchEvaluationFunctions = async () => {
+    try {
+      const response = await axios.get(`${API_BASE}/evaluation-functions/`);
+      setEvaluationFunctions(response.data.evaluation_functions);
+    } catch (error) {
+      console.error('Error fetching evaluation functions:', error);
     }
   };
 
@@ -80,7 +92,7 @@ function TestSchedules() {
       await axios.post(`${API_BASE}/test-schedules/`, scheduleData);
       
       setCreateScheduleModal(false);
-      setFormData({ prompt_system_id: '', name: '', interval_seconds: 3600 });
+      setFormData({ prompt_system_id: '', name: '', interval_seconds: 3600, evaluation_function: 'fuzzy' });
       setSelectedFile(null);
       fetchSchedules();
     } catch (error) {
@@ -177,6 +189,22 @@ function TestSchedules() {
                 required
               />
               <small>Enter 1 for 1 second, 3600 for 1 hour, etc.</small>
+            </div>
+
+            <div className="form-group">
+              <label>Evaluation Function:</label>
+              <select
+                name="evaluation_function"
+                value={formData.evaluation_function}
+                onChange={handleInputChange}
+                required
+              >
+                {evaluationFunctions.map((func) => (
+                  <option key={func.id} value={func.id}>
+                    {func.name} - {func.description}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">
