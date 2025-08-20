@@ -44,12 +44,21 @@ class EmailService:
         Returns:
             bool: True if email sent successfully, False otherwise
         """
+        print(f"=== Email Service Debug ===")
+        print(f"SMTP Server: {self.smtp_server}")
+        print(f"SMTP Port: {self.smtp_port}")
+        print(f"SMTP Username: {self.smtp_username}")
+        print(f"SMTP Password: {'Set' if self.smtp_password else 'Not set'}")
+        print(f"From Email: {self.from_email}")
+        print(f"Recipients: {recipients}")
+        print(f"Subject: {subject}")
+        
         if not self.smtp_username or not self.smtp_password:
-            print("SMTP credentials not configured. Skipping email notification.")
+            print("❌ SMTP credentials not configured. Skipping email notification.")
             return False
             
         if not recipients:
-            print("No recipients specified. Skipping email notification.")
+            print("❌ No recipients specified. Skipping email notification.")
             return False
             
         try:
@@ -83,11 +92,14 @@ class EmailService:
                 server.login(self.smtp_username, self.smtp_password)
                 server.send_message(msg)
                 
-            print(f"Alert email sent to {len(recipients)} recipients")
+            print(f"✅ Alert email sent to {len(recipients)} recipients")
             return True
             
         except Exception as e:
-            print(f"Failed to send alert email: {e}")
+            print(f"❌ Failed to send alert email: {e}")
+            print(f"Error type: {type(e)}")
+            import traceback
+            print(f"Full traceback: {traceback.format_exc()}")
             return False
     
     def send_score_drop_alert(self, 
