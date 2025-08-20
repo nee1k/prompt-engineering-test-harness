@@ -1,5 +1,0 @@
-{"text": "Hello world", "language": "French", "expected_output": "Bonjour le monde"}
-{"text": "Good morning", "language": "Spanish", "expected_output": "Buenos días"}
-{"text": "Thank you", "language": "German", "expected_output": "Danke"}
-{"text": "How are you?", "language": "Italian", "expected_output": "Come stai?"}
-{"text": "Goodbye", "language": "Portuguese", "expected_output": "Adeus"}
