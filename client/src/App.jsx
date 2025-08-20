@@ -5,7 +5,7 @@ import TestRunForm from './components/TestRunForm'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
 import Alerts from './components/Alerts'
-import TestHistory from './components/TestHistory'
+
 
 function App() {
   const location = useLocation()
@@ -48,12 +48,7 @@ function App() {
           >
             Alerts
           </Link>
-          <Link 
-            to="/history" 
-            className={location.pathname === '/history' ? 'active' : ''}
-          >
-            History
-          </Link>
+
           
         </nav>
 
@@ -63,7 +58,7 @@ function App() {
           <Route path="/test" element={<TestRunForm />} />
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/alerts" element={<Alerts />} />
-          <Route path="/history" element={<TestHistory />} />
+
         </Routes>
       </div>
     </div>
