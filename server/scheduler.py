@@ -171,7 +171,7 @@ class TestScheduler:
             
             # Update schedule
             schedule.last_run_at = datetime.utcnow()
-            schedule.next_run_at = datetime.utcnow() + timedelta(hours=schedule.interval_hours)
+            schedule.next_run_at = datetime.utcnow() + timedelta(minutes=schedule.interval_hours)
             
             db.commit()
             
@@ -190,7 +190,7 @@ class TestScheduler:
         try:
             schedules = db.query(TestSchedule).filter(TestSchedule.is_active == True).all()
             for schedule in schedules:
-                await self.add_schedule(schedule.id, schedule.interval_hours * 3600)
+                await self.add_schedule(schedule.id, schedule.interval_hours * 60)
             print(f"Loaded {len(schedules)} existing schedules")
         finally:
             db.close()

@@ -445,7 +445,7 @@ async def create_test_schedule(schedule: TestScheduleCreate):
             prompt_system_id=schedule.prompt_system_id,
             name=schedule.name,
             regression_set=json.dumps(schedule.regression_set),
-            interval_hours=schedule.interval_seconds // 3600,  # Convert seconds to hours for storage
+            interval_hours=schedule.interval_seconds // 60,  # Convert seconds to minutes for storage
             evaluation_function=schedule.evaluation_function,
             email_notifications=schedule.email_notifications,
             email_recipients=json.dumps(schedule.email_recipients) if schedule.email_recipients else None,
@@ -483,7 +483,7 @@ async def toggle_test_schedule(schedule_id: str):
         schedule.is_active = not schedule.is_active
         
         if schedule.is_active:
-            await scheduler.add_schedule(schedule_id, schedule.interval_hours)
+            await scheduler.add_schedule(schedule_id, schedule.interval_hours * 60)  # Convert minutes to seconds for scheduler
         else:
             await scheduler.remove_schedule(schedule_id)
         

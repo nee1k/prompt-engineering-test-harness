@@ -56,7 +56,7 @@ class TestSchedule(Base):
     prompt_system_id = Column(String, ForeignKey("prompt_systems.id"))
     name = Column(String)
     regression_set = Column(Text)  # JSON string of regression set
-    interval_hours = Column(Integer)  # Hours between runs
+    interval_hours = Column(Integer)  # Minutes between runs (keeping column name for backward compatibility)
     evaluation_function = Column(String, default="fuzzy")  # Evaluation function to use
     email_notifications = Column(Boolean, default=False)  # Enable email notifications
     email_recipients = Column(Text, nullable=True)  # JSON array of email addresses

@@ -14,7 +14,7 @@ function TestSchedules() {
   const [formData, setFormData] = useState({
     prompt_system_id: '',
     name: '',
-    interval_seconds: 3600,
+    interval_minutes: 60,
     evaluation_function: 'fuzzy',
     email_notifications: false,
     email_recipients: '',
@@ -94,6 +94,7 @@ function TestSchedules() {
       // Create schedule
       const scheduleData = {
         ...formData,
+        interval_seconds: formData.interval_minutes * 60, // Convert minutes to seconds for backend
         email_recipients: emailRecipients,
         regression_set: regressionSet
       };
@@ -104,7 +105,7 @@ function TestSchedules() {
       setFormData({ 
         prompt_system_id: '', 
         name: '', 
-        interval_seconds: 3600, 
+        interval_minutes: 60, 
         evaluation_function: 'fuzzy',
         email_notifications: false,
         email_recipients: '',
@@ -195,17 +196,17 @@ function TestSchedules() {
             </div>
 
             <div className="form-group">
-              <label>Interval (seconds):</label>
+              <label>Interval (minutes):</label>
               <input
                 type="number"
-                name="interval_seconds"
-                value={formData.interval_seconds}
+                name="interval_minutes"
+                value={formData.interval_minutes}
                 onChange={handleInputChange}
                 min="1"
-                max="86400"
+                max="1440"
                 required
               />
-              <small>Enter 1 for 1 second, 3600 for 1 hour, etc.</small>
+              <small>Enter 1 for 1 minute, 60 for 1 hour, 1440 for 1 day, etc.</small>
             </div>
 
             <div className="form-group">
@@ -360,14 +361,7 @@ function TestSchedules() {
                     <td className="schedule-name">{schedule.name}</td>
                     <td className="system-name">{schedule.prompt_system?.name || 'Unknown'}</td>
                     <td className="interval">
-                      {schedule.interval_hours === 1 
-                        ? 'Every hour' 
-                        : schedule.interval_hours < 24 
-                          ? `Every ${schedule.interval_hours} hour(s)` 
-                          : schedule.interval_hours === 24 
-                            ? 'Daily' 
-                            : `Every ${Math.floor(schedule.interval_hours / 24)} day(s)`
-                      }
+                      Every {schedule.interval_hours} minute(s)
                     </td>
                     <td className="status-cell">
                       <span className={`status-badge ${schedule.is_active ? 'active' : 'inactive'}`}>
