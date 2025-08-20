@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 import json
 import pandas as pd
 import difflib
-import openai
+from openai import OpenAI
 import os
 import httpx
 from dotenv import load_dotenv
@@ -20,7 +20,7 @@ from scheduler import scheduler
 load_dotenv()
 
 # Initialize OpenAI client
-openai.api_key = os.getenv("OPENAI_API_KEY")
+openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 app = FastAPI(title="Prompt Engineering Test Harness")
 
@@ -100,13 +100,12 @@ async def call_ollama(prompt: str, model: str, temperature: float, max_tokens: i
 async def call_openai(prompt: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
     """Call OpenAI API"""
     try:
-        response = openai.ChatCompletion.create(
+        response = openai_client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
             max_tokens=max_tokens,
-            top_p=top_p,
-            top_k=top_k
+            top_p=top_p
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
