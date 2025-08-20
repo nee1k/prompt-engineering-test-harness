@@ -347,7 +347,7 @@ function TestSchedules() {
                   <th>Status</th>
                   <th>Last Run</th>
                   <th>Next Run</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -366,7 +366,7 @@ function TestSchedules() {
                     <td className="last-run">
                       {schedule.last_run_at 
                         ? new Date(schedule.last_run_at).toLocaleString()
-                        : 'Never'
+                        : '-'
                       }
                     </td>
                     <td className="next-run">

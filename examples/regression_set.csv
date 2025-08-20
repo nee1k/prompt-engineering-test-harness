@@ -1,0 +1,11 @@
+text,language,expected_output
+"Hello world","French","Bonjour le monde"
+"Good morning","Spanish","Buenos días"
+"Thank you","German","Danke"
+"How are you?","Italian","Come stai?"
+"Goodbye","Portuguese","Adeus"
+"Please help me","French","S'il vous plaît aidez-moi"
+"What time is it?","Spanish","¿Qué hora es?"
+"I love you","German","Ich liebe dich"
+"Where is the bathroom?","Italian","Dove è il bagno?"
+"Excuse me","Portuguese","Com licença"
