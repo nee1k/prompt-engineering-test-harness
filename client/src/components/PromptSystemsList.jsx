@@ -254,7 +254,11 @@ function PromptSystemsList() {
       
       {promptSystems.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">📝</div>
+          <div className="empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+            </svg>
+          </div>
           <h3>No Prompt Systems Found</h3>
           <p>Create your first prompt system to get started with testing and evaluation.</p>
           <button className="btn btn-primary" onClick={() => setCreateSystemModal(true)}>
@@ -323,7 +327,6 @@ function PromptSystemsList() {
                         onClick={() => showTemplate(system.template, system.name, JSON.parse(system.variables))}
                         title="View Template"
                       >
-                        <span className="btn-icon">📄</span>
                         Template
                       </button>
                       <button 
@@ -332,7 +335,6 @@ function PromptSystemsList() {
                         disabled={historyLoading}
                         title="View History"
                       >
-                        <span className="btn-icon">📊</span>
                         History
                       </button>
                     </div>
@@ -400,20 +402,18 @@ function PromptSystemsList() {
       
       {/* Action Buttons */}
       <div className="action-buttons-section">
-        <button 
-          className="btn btn-primary btn-large"
-          onClick={() => setCreateSystemModal(true)}
-        >
-          <span className="btn-icon">➕</span>
-          Create New Prompt System
-        </button>
-        <button 
-          className="btn btn-secondary btn-large"
-          onClick={() => setTestSystemModal(true)}
-        >
-          <span className="btn-icon">🧪</span>
-          Test a System
-        </button>
+                  <button 
+            className="btn btn-primary btn-large"
+            onClick={() => setCreateSystemModal(true)}
+          >
+            Create New Prompt System
+          </button>
+                  <button 
+            className="btn btn-secondary btn-large"
+            onClick={() => setTestSystemModal(true)}
+          >
+            Test a System
+          </button>
       </div>
 
       {/* History Modal */}

@@ -223,14 +223,21 @@ function PromptSystemForm({ onSuccess }) {
           <button type="submit" className="btn btn-primary" disabled={loading} align="center">
             {loading ? (
               <>
-                <span className="btn-icon">⏳</span>
+                <span className="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
+                  </svg>
+                </span>
                 Creating...
               </>
             ) : (
               <>
-                <span className="btn-icon">✨</span>
+                <span className="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </span>
                 Create Prompt System
-                <span className="btn-icon"> ✨</span>
               </>
             )}
           </button>

@@ -8,7 +8,7 @@ function TestSchedules() {
   const [promptSystems, setPromptSystems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createScheduleModal, setCreateScheduleModal] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({
     prompt_system_id: '',
@@ -79,8 +79,8 @@ function TestSchedules() {
 
       await axios.post(`${API_BASE}/test-schedules/`, scheduleData);
       
-      setShowCreateForm(false);
-                  setFormData({ prompt_system_id: '', name: '', interval_seconds: 3600 });
+      setCreateScheduleModal(false);
+      setFormData({ prompt_system_id: '', name: '', interval_seconds: 3600 });
       setSelectedFile(null);
       fetchSchedules();
     } catch (error) {
@@ -118,37 +118,32 @@ function TestSchedules() {
 
   return (
     <div className="schedules-container">
-      <div className="schedules-header">
-        <div className="header-actions">
-          <button 
-            className="btn btn-primary"
-            onClick={() => setShowCreateForm(!showCreateForm)}
-          >
-            {showCreateForm ? (
-              <>
-                <span className="btn-icon">✕</span>
-                Cancel
-              </>
-            ) : (
-              <>
-                <span className="btn-icon">➕</span>
-                Create Schedule
-              </>
-            )}
-          </button>
-        </div>
-      </div>
 
-      {showCreateForm && (
-        <div className="schedule-form-container">
-          <div className="schedule-form-header">
-            <h3>Create New Schedule</h3>
-            <div className="form-info">
-              <span className="info-icon">📅</span>
-              <span className="info-text">Set up automated testing for your prompt systems</span>
+
+
+      {/* Create Schedule Modal */}
+      {createScheduleModal && (
+        <div className="modal-overlay" onClick={() => setCreateScheduleModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
+            <div className="modal-header">
+              <h3>Create New Schedule</h3>
+              <button 
+                className="btn-close"
+                onClick={() => setCreateScheduleModal(false)}
+              >
+                ×
+              </button>
             </div>
-          </div>
-          <form onSubmit={handleSubmit} className="schedule-form">
+            <div className="modal-body">
+              <div className="form-info">
+                <span className="info-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zM7 10h5v5H7z"/>
+                  </svg>
+                </span>
+                <span className="info-text">Set up automated testing for your prompt systems</span>
+              </div>
+              <form onSubmit={handleSubmit} className="schedule-form">
             <div className="form-group">
               <label>Prompt System:</label>
               <select
@@ -204,7 +199,11 @@ function TestSchedules() {
                     required
                     style={{ display: 'none' }}
                   />
-                  <div className="upload-icon">📁</div>
+                  <div className="upload-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
+                    </svg>
+                  </div>
                   <div className="upload-content">
                     <p className="upload-title">
                       {selectedFile ? selectedFile.name : 'Click to select file'}
@@ -224,18 +223,28 @@ function TestSchedules() {
 
             <div className="form-actions">
               <button type="submit" className="btn btn-primary">
-                <span className="btn-icon">✨</span>
+                <span className="btn-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                  </svg>
+                </span>
                 Create Schedule
               </button>
             </div>
           </form>
+            </div>
+          </div>
         </div>
       )}
 
       <div className="schedules-list-container">
         {schedules.length === 0 ? (
           <div className="empty-state">
-            <div className="empty-icon">⏰</div>
+            <div className="empty-icon">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M16.2,16.2L11,13V7H12.5V12.2L17,14.9L16.2,16.2Z"/>
+              </svg>
+            </div>
             <h3>No schedules found</h3>
             <p>Create your first schedule to automate testing</p>
           </div>
@@ -281,14 +290,26 @@ function TestSchedules() {
                         <button
                           className={`btn btn-sm ${schedule.is_active ? 'btn-warning' : 'btn-success'}`}
                           onClick={() => toggleSchedule(schedule.id)}
+                          title={schedule.is_active ? 'Pause Schedule' : 'Resume Schedule'}
                         >
-                          {schedule.is_active ? '⏸️ Pause' : '▶️ Resume'}
+                          {schedule.is_active ? (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z"/>
+                            </svg>
+                          ) : (
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M8 5v14l11-7z"/>
+                            </svg>
+                          )}
                         </button>
                         <button
                           className="btn btn-sm btn-danger"
                           onClick={() => deleteSchedule(schedule.id)}
+                          title="Delete Schedule"
                         >
-                          🗑️ Delete
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                          </svg>
                         </button>
                       </div>
                     </td>
@@ -298,6 +319,16 @@ function TestSchedules() {
             </table>
           </div>
         )}
+      </div>
+      
+      {/* Create Schedule Button */}
+      <div className="create-schedule-section">
+        <button 
+          className="btn btn-primary btn-large"
+          onClick={() => setCreateScheduleModal(true)}
+        >
+          Create New Schedule
+        </button>
       </div>
     </div>
   );
