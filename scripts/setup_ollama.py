@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Ollama Setup Script for Emissary
+Ollama Setup Script for Prompt Monitor
 
-This script helps set up Ollama for use with the Emissary prompt system monitor.
+This script helps set up Ollama for use with the Prompt Monitor system.
 It checks if Ollama is installed, running, and pulls common models.
 """
 
@@ -115,7 +115,7 @@ def pull_model(model_name):
         return False
 
 def main():
-    print("🚀 Emissary Ollama Setup")
+    print("🚀 Prompt Monitor Ollama Setup")
     print("=" * 40)
     
     # Check if Ollama is installed
@@ -177,7 +177,7 @@ def main():
             print(f"✓ {model} is already available")
     
     print("\n🎉 Ollama setup complete!")
-    print("\nYou can now use Ollama models in Emissary:")
+    print("\nYou can now use Ollama models in Prompt Monitor:")
     print("1. Go to 'Create System'")
     print("2. Select 'Ollama (Local)' as provider")
     print("3. Choose from the available models")

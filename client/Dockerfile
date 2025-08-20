@@ -13,11 +13,11 @@ COPY . .
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S emissary -u 1001
+    adduser -S prompt_monitor -u 1001
 
 # Change ownership
-RUN chown -R emissary:nodejs /app
-USER emissary
+RUN chown -R prompt_monitor:nodejs /app
+USER prompt_monitor
 
 # Expose port
 EXPOSE 3000

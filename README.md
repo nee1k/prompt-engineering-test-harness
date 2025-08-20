@@ -183,7 +183,7 @@ The Docker setup is production-ready out of the box:
 ```bash
 # Clone and start
 git clone https://github.com/nee1k/prompt-systems-monitor.git
-cd emissary
+cd prompt-systems-monitor
 docker-compose up -d
 
 # Access your application

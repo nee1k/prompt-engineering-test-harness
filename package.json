@@ -1,5 +1,5 @@
 {
-  "name": "emissary",
+  "name": "prompt-monitor",
   "version": "1.0.0",
   "description": "A prompt system monitoring application for LLM evaluation",
   "main": "server/index.js",

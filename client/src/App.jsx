@@ -11,7 +11,7 @@ function App() {
   return (
     <div>
       <header className="header">
-        <h1>Emissary - Prompt System Monitor</h1>
+        <h1>Prompt Monitor - LLM System Monitor</h1>
       </header>
       
       <div className="container">

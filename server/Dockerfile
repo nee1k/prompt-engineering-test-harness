@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Create non-root user
-RUN useradd -m -u 1000 emissary && chown -R emissary:emissary /app
-USER emissary
+RUN useradd -m -u 1000 prompt_monitor && chown -R prompt_monitor:prompt_monitor /app
+USER prompt_monitor
 
 # Expose port
 EXPOSE 8000

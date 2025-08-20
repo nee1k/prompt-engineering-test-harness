@@ -1,5 +1,5 @@
 {
-  "name": "emissary-server",
+  "name": "prompt-monitor-server",
   "version": "1.0.0",
   "description": "Backend server for prompt system monitoring",
   "main": "index.js",

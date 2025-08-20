@@ -2,18 +2,18 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: emissary-db
+    container_name: prompt-monitor-db
     environment:
-      POSTGRES_DB: emissary
-      POSTGRES_USER: emissary
-      POSTGRES_PASSWORD: emissary_password
+      POSTGRES_DB: prompt_monitor
+      POSTGRES_USER: prompt_monitor
+      POSTGRES_PASSWORD: prompt_monitor_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U emissary"]
+      test: ["CMD-SHELL", "pg_isready -U prompt_monitor"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -21,7 +21,7 @@ services:
   # Redis for caching and session management
   redis:
     image: redis:7-alpine
-    container_name: emissary-redis
+    container_name: prompt-monitor-redis
     ports:
       - "6379:6379"
     volumes:
@@ -37,9 +37,9 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: emissary-backend
+    container_name: prompt-monitor-backend
     environment:
-      - DATABASE_URL=postgresql://emissary:emissary_password@postgres:5432/emissary
+      - DATABASE_URL=postgresql://prompt_monitor:prompt_monitor_password@postgres:5432/prompt_monitor
       - REDIS_URL=redis://redis:6379
       - OPENAI_API_KEY=${OPENAI_API_KEY}
     ports:
@@ -61,7 +61,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: emissary-frontend
+    container_name: prompt-monitor-frontend
     ports:
       - "3000:3000"
     depends_on:
@@ -74,7 +74,7 @@ services:
   # Nginx Reverse Proxy (optional)
   nginx:
     image: nginx:alpine
-    container_name: emissary-nginx
+    container_name: prompt-monitor-nginx
     ports:
       - "80:80"
       - "443:443"
