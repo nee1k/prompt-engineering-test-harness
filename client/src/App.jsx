@@ -2,7 +2,6 @@ import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import PromptSystemForm from './components/PromptSystemForm'
 import TestRunForm from './components/TestRunForm'
-import TestResults from './components/TestResults'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
 import Alerts from './components/Alerts'
@@ -55,12 +54,7 @@ function App() {
           >
             History
           </Link>
-          <Link 
-            to="/results" 
-            className={location.pathname === '/results' ? 'active' : ''}
-          >
-            Test Results
-          </Link>
+          
         </nav>
 
         <Routes>
@@ -70,7 +64,6 @@ function App() {
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/alerts" element={<Alerts />} />
           <Route path="/history" element={<TestHistory />} />
-          <Route path="/results" element={<TestResults />} />
         </Routes>
       </div>
     </div>
