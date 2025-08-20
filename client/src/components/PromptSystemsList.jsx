@@ -216,7 +216,7 @@ function PromptSystemsList() {
               <th>Template</th>
               <th>Variables</th>
               <th>Created (UTC)</th>
-              <th>Actions</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
@@ -319,7 +319,7 @@ function PromptSystemsList() {
                           <th>Timestamp</th>
                           <th>Score</th>
                           <th>Samples</th>
-                          <th>Actions</th>
+                          <th></th>
                         </tr>
                       </thead>
                       <tbody>

@@ -205,7 +205,7 @@ function TestSchedules() {
                 <th>Status</th>
                 <th>Last Run</th>
                 <th>Next Run</th>
-                <th>Actions</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
