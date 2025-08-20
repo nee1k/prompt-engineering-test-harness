@@ -1909,42 +1909,56 @@ body {
   }
 }
 
-/* Create System Button Section */
-.create-system-section {
+/* Action Buttons Section */
+.action-buttons-section {
   background: white;
   border-radius: 12px;
   padding: 32px;
   margin-top: 24px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   text-align: center;
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
 
-.create-system-section .btn-large {
+.action-buttons-section .btn-large {
   padding: 16px 32px;
   font-size: 18px;
   font-weight: 600;
   border-radius: 12px;
   transition: all 0.2s ease;
+  min-width: 200px;
 }
 
-.create-system-section .btn-large:hover {
+.action-buttons-section .btn-primary.btn-large:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
 }
 
-.create-system-section .btn-icon {
+.action-buttons-section .btn-secondary.btn-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(108, 117, 125, 0.3);
+}
+
+.action-buttons-section .btn-icon {
   margin-right: 8px;
   font-size: 20px;
 }
 
-/* Responsive Design for Create System Button */
+/* Responsive Design for Action Buttons */
 @media (max-width: 768px) {
-  .create-system-section {
+  .action-buttons-section {
     padding: 24px;
+    flex-direction: column;
+    align-items: center;
   }
   
-  .create-system-section .btn-large {
+  .action-buttons-section .btn-large {
     padding: 14px 24px;
     font-size: 16px;
+    width: 100%;
+    max-width: 300px;
   }
 }

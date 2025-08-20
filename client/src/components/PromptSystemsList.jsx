@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import PromptSystemForm from './PromptSystemForm'
+import TestRunForm from './TestRunForm'
 
 const API_BASE = window.location.hostname === 'localhost' && window.location.port === '3000' 
   ? 'http://localhost:8000' 
@@ -19,6 +20,7 @@ function PromptSystemsList() {
   const [templateModal, setTemplateModal] = useState({ show: false, template: '', systemName: '', variables: [] })
   const [systemMetrics, setSystemMetrics] = useState({})
   const [createSystemModal, setCreateSystemModal] = useState(false)
+  const [testSystemModal, setTestSystemModal] = useState(false)
 
   useEffect(() => {
     fetchPromptSystems()
@@ -396,14 +398,21 @@ function PromptSystemsList() {
         </div>
       )}
       
-      {/* Create System Button */}
-      <div className="create-system-section">
+      {/* Action Buttons */}
+      <div className="action-buttons-section">
         <button 
           className="btn btn-primary btn-large"
           onClick={() => setCreateSystemModal(true)}
         >
           <span className="btn-icon">➕</span>
           Create New Prompt System
+        </button>
+        <button 
+          className="btn btn-secondary btn-large"
+          onClick={() => setTestSystemModal(true)}
+        >
+          <span className="btn-icon">🧪</span>
+          Test a System
         </button>
       </div>
 
@@ -650,6 +659,26 @@ function PromptSystemsList() {
                   fetchPromptSystems()
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Test System Modal */}
+      {testSystemModal && (
+        <div className="modal-overlay" onClick={() => setTestSystemModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px' }}>
+            <div className="modal-header">
+              <h3>Test a System</h3>
+              <button 
+                className="btn-close"
+                onClick={() => setTestSystemModal(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="modal-body">
+              <TestRunForm />
             </div>
           </div>
         </div>
