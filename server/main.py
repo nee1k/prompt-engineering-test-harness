@@ -102,10 +102,16 @@ async def call_openai(prompt: str, model: str, temperature: float, max_tokens: i
     try:
         # Debug: Check if API key is set
         api_key = os.getenv("OPENAI_API_KEY")
+        print(f"API Key present: {bool(api_key)}")
+        print(f"API Key length: {len(api_key) if api_key else 0}")
+        print(f"API Key prefix: {api_key[:10] if api_key else 'None'}...")
+        
         if not api_key:
             raise HTTPException(status_code=500, detail="OpenAI API key not found in environment variables")
         
         print(f"Calling OpenAI API with model: {model}")
+        print(f"Prompt length: {len(prompt)}")
+        
         response = openai_client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
@@ -113,9 +119,13 @@ async def call_openai(prompt: str, model: str, temperature: float, max_tokens: i
             max_tokens=max_tokens,
             top_p=top_p
         )
+        print(f"OpenAI API call successful")
         return response.choices[0].message.content.strip()
     except Exception as e:
         print(f"OpenAI API error details: {str(e)}")
+        print(f"Error type: {type(e)}")
+        import traceback
+        print(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"OpenAI API error: {str(e)}")
 
 async def call_llm(prompt: str, provider: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):

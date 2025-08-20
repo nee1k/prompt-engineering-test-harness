@@ -38,6 +38,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: prompt-engineering-test-harness-backend
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=postgresql://prompt_monitor:prompt_monitor_password@postgres:5432/prompt_monitor
       - REDIS_URL=redis://redis:6379
