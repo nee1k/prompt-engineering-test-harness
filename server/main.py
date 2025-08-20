@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -67,13 +67,7 @@ class TestScheduleCreate(BaseModel):
     email_recipients: List[str] = []
     alert_threshold: float = 0.2
 
-class EvaluationResult(BaseModel):
-    sample_id: str
-    input_variables: Dict[str, Any]
-    expected_output: str
-    predicted_output: str
-    score: float
-    evaluation_method: str
+
 
 async def call_ollama(prompt: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
     """Call Ollama API"""

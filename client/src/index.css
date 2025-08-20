@@ -712,28 +712,9 @@ body {
   margin: 0 auto;
 }
 
-.systems-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
 
-.header-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
 
-.header-content h2 {
-  margin: 0;
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-}
+
 
 .header-stats {
   display: flex;
@@ -1025,12 +1006,7 @@ body {
   box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.form-header .header-content h2 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-}
+
 
 .header-info {
   display: flex;
@@ -1044,14 +1020,7 @@ body {
   gap: 8px;
 }
 
-.info-icon {
-  font-size: 20px;
-}
 
-.info-text {
-  color: #666;
-  font-size: 14px;
-}
 
 .form-container {
   background: white;
@@ -1245,20 +1214,7 @@ body {
   margin: 0 auto;
 }
 
-.test-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
 
-.test-header .header-content h2 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-}
 
 .test-form-container {
   background: white;
@@ -1542,28 +1498,9 @@ body {
   margin: 0 auto;
 }
 
-.schedules-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
 
-.schedules-header .header-content h2 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-}
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
+
 
 .schedule-form-container {
   background: white;
@@ -1584,11 +1521,7 @@ body {
   font-weight: 600;
 }
 
-.form-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+
 
 .schedule-form {
   display: flex;
@@ -1839,15 +1772,9 @@ body {
     max-width: 100%;
   }
   
-  .schedules-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
+
   
-  .header-actions {
-    justify-content: center;
-  }
+
   
   .schedule-form-container,
   .schedules-list-container {
@@ -1914,28 +1841,9 @@ body {
 }
 
 /* Prompt Systems Header and Pagination Styles */
-.systems-header {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
 
-.systems-header .header-content h2 {
-  margin: 0 0 12px 0;
-  color: #333;
-  font-size: 28px;
-  font-weight: 600;
-}
 
-.header-actions {
-  display: flex;
-  gap: 12px;
-}
+
 
 .pagination-container {
   margin-top: 24px;
@@ -1996,15 +1904,7 @@ body {
 
 /* Responsive Design for Pagination */
 @media (max-width: 768px) {
-  .systems-header {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-  
-  .header-actions {
-    justify-content: center;
-  }
+
   
   .pagination-controls {
     flex-direction: column;
