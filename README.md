@@ -1,4 +1,4 @@
-# LLM Prompt Evaluation Dashboard
+# Prompt Engineering Test Harness
 
 > **A lightweight application for monitoring and evaluating LLM prompt systems**
 

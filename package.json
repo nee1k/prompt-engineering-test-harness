@@ -1,7 +1,7 @@
 {
-  "name": "llm-prompt-evaluation-dashboard",
+  "name": "prompt-engineering-test-harness",
   "version": "1.0.0",
-  "description": "A prompt system monitoring application for LLM evaluation",
+  "description": "Prompt Engineering Test Harness for LLM evaluation",
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",

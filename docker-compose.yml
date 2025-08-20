@@ -2,7 +2,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
-    container_name: prompt-monitor-db
+    container_name: prompt-engineering-test-harness-db
     environment:
       POSTGRES_DB: prompt_monitor
       POSTGRES_USER: prompt_monitor
@@ -21,7 +21,7 @@ services:
   # Redis for caching and session management
   redis:
     image: redis:7-alpine
-    container_name: prompt-monitor-redis
+    container_name: prompt-engineering-test-harness-redis
     ports:
       - "6379:6379"
     volumes:
@@ -37,11 +37,11 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: prompt-monitor-backend
+    container_name: prompt-engineering-test-harness-backend
     environment:
       - DATABASE_URL=postgresql://prompt_monitor:prompt_monitor_password@postgres:5432/prompt_monitor
       - REDIS_URL=redis://redis:6379
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=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
     ports:
       - "8000:8000"
     depends_on:
@@ -61,7 +61,7 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
-    container_name: prompt-monitor-frontend
+    container_name: prompt-engineering-test-harness-frontend
     ports:
       - "3000:3000"
     depends_on:
@@ -74,7 +74,7 @@ services:
   # Nginx Reverse Proxy (optional)
   nginx:
     image: nginx:alpine
-    container_name: prompt-monitor-nginx
+    container_name: prompt-engineering-test-harness-nginx
     ports:
       - "80:80"
       - "443:443"

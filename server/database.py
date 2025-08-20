@@ -6,7 +6,7 @@ import os
 # Use PostgreSQL in production, SQLite in development
 DATABASE_URL = os.getenv(
     "DATABASE_URL", 
-    "sqlite:///./prompt-monitor.db"
+    "sqlite:///./prompt-engineering-test-harness.db"
 )
 
 # Configure engine based on database type

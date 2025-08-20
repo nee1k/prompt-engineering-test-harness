@@ -1,5 +1,5 @@
 {
-  "name": "llm-prompt-evaluation-dashboard-server",
+  "name": "prompt-engineering-test-harness-server",
   "version": "1.0.0",
   "description": "Backend server for prompt system monitoring",
   "main": "index.js",

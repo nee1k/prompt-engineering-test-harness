@@ -13,7 +13,7 @@ function App() {
   return (
     <div>
       <header className="header">
-        <h1>LLM Prompt Evaluation Dashboard</h1>
+        <h1>Prompt Engineering Test Harness</h1>
       </header>
       
       <div className="container">
