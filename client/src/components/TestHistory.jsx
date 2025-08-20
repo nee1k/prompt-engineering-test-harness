@@ -14,6 +14,8 @@ function TestHistory() {
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [selectedRunDetails, setSelectedRunDetails] = useState(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     fetchPromptSystems();
@@ -86,6 +88,17 @@ function TestHistory() {
   const handleItemsPerPageChange = (newItemsPerPage) => {
     setItemsPerPage(newItemsPerPage);
     setCurrentPage(1); // Reset to first page
+  };
+
+  const fetchTestRunDetails = async (testRunId) => {
+    try {
+      const response = await axios.get(`${API_BASE}/test-runs/${testRunId}`);
+      setSelectedRunDetails(response.data);
+      setShowDetailsModal(true);
+    } catch (error) {
+      setError('Failed to fetch test run details');
+      console.error('Error:', error);
+    }
   };
 
   const renderPagination = () => {
@@ -174,6 +187,92 @@ function TestHistory() {
     return pages;
   };
 
+  const renderDetailsModal = () => {
+    if (!showDetailsModal || !selectedRunDetails) return null;
+
+    const { test_run, results } = selectedRunDetails;
+
+    return (
+      <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
+        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-header">
+            <h3>Test Run Details</h3>
+            <button 
+              className="modal-close"
+              onClick={() => setShowDetailsModal(false)}
+            >
+              ×
+            </button>
+          </div>
+          
+          <div className="modal-body">
+            <div className="test-run-info">
+              <h4>Test Run Information</h4>
+              <div className="info-grid">
+                <div className="info-item">
+                  <label>Test Run ID:</label>
+                  <span>{test_run.id}</span>
+                </div>
+                <div className="info-item">
+                  <label>Timestamp:</label>
+                  <span>{new Date(test_run.created_at).toLocaleString()}</span>
+                </div>
+                <div className="info-item">
+                  <label>Average Score:</label>
+                  <span>{(test_run.avg_score || 0).toFixed(2)}</span>
+                </div>
+                <div className="info-item">
+                  <label>Total Samples:</label>
+                  <span>{test_run.total_samples || 0}</span>
+                </div>
+                <div className="info-item">
+                  <label>Prompt System:</label>
+                  <span>{test_run.prompt_system?.name || 'Unknown'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="test-results">
+              <h4>Individual Results</h4>
+              <div className="results-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Sample</th>
+                      <th>Input Variables</th>
+                      <th>Expected Output</th>
+                      <th>Predicted Output</th>
+                      <th>Score</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {results.map((result, index) => (
+                      <tr key={result.id}>
+                        <td>{parseInt(result.sample_id) + 1}</td>
+                        <td>
+                          <pre className="json-display">
+                            {JSON.stringify(JSON.parse(result.input_variables), null, 2)}
+                          </pre>
+                        </td>
+                        <td className="output-cell">{result.expected_output}</td>
+                        <td className="output-cell">{result.predicted_output}</td>
+                        <td>
+                          <span className={`score-badge ${result.score > 0.8 ? 'high' : result.score > 0.5 ? 'medium' : 'low'}`}>
+                            {result.score.toFixed(2)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (error) return <div className="error">Error: {error}</div>;
 
   return (
@@ -257,9 +356,10 @@ function TestHistory() {
                     <table>
                       <thead>
                         <tr>
-                          <th>Date</th>
+                          <th>Timestamp</th>
                           <th>Score</th>
                           <th>Samples</th>
+                          <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -268,6 +368,14 @@ function TestHistory() {
                             <td>{new Date(run.created_at).toLocaleString()}</td>
                             <td>{(run.avg_score || 0).toFixed(2)}</td>
                             <td>{run.total_samples || 0}</td>
+                            <td>
+                              <button
+                                className="btn btn-sm btn-primary"
+                                onClick={() => fetchTestRunDetails(run.id)}
+                              >
+                                View Details
+                              </button>
+                            </td>
                           </tr>
                         ))}
                       </tbody>
@@ -289,6 +397,8 @@ function TestHistory() {
           )}
         </>
       )}
+      
+      {renderDetailsModal()}
     </div>
   );
 }
