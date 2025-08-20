@@ -270,17 +270,7 @@ async def create_test_run(test_run: TestRunCreate):
         if not prompt_system:
             raise HTTPException(status_code=404, detail="Prompt system not found")
         
-        # Create test run
-        test_run_id = str(uuid.uuid4())
-        db_test_run = TestRun(
-            id=test_run_id,
-            prompt_system_id=test_run.prompt_system_id,
-            created_at=datetime.utcnow()
-        )
-        db.add(db_test_run)
-        db.commit()
-        
-        # Process each sample
+        # Process all samples first before creating any database records
         results = []
         total_score = 0
         
@@ -310,19 +300,6 @@ async def create_test_run(test_run: TestRunCreate):
             score = evaluate_output(predicted_output, expected_output)
             total_score += score
             
-            # Store result
-            db_result = TestResult(
-                id=str(uuid.uuid4()),
-                test_run_id=test_run_id,
-                sample_id=str(i),
-                input_variables=json.dumps(variables),
-                expected_output=expected_output,
-                predicted_output=predicted_output,
-                score=score,
-                evaluation_method="fuzzy"
-            )
-            db.add(db_result)
-            
             results.append({
                 "sample_id": str(i),
                 "input_variables": variables,
@@ -332,10 +309,35 @@ async def create_test_run(test_run: TestRunCreate):
                 "evaluation_method": "fuzzy"
             })
         
+        # Only create database records after all samples are processed successfully
+        test_run_id = str(uuid.uuid4())
+        db_test_run = TestRun(
+            id=test_run_id,
+            prompt_system_id=test_run.prompt_system_id,
+            created_at=datetime.utcnow()
+        )
+        db.add(db_test_run)
+        
+        # Store all results
+        for result in results:
+            db_result = TestResult(
+                id=str(uuid.uuid4()),
+                test_run_id=test_run_id,
+                sample_id=result["sample_id"],
+                input_variables=json.dumps(result["input_variables"]),
+                expected_output=result["expected_output"],
+                predicted_output=result["predicted_output"],
+                score=result["score"],
+                evaluation_method=result["evaluation_method"]
+            )
+            db.add(db_result)
+        
         # Update test run with aggregate metrics
         avg_score = total_score / len(test_run.regression_set) if test_run.regression_set else 0
         db_test_run.avg_score = avg_score
         db_test_run.total_samples = len(test_run.regression_set)
+        
+        # Commit everything at once
         db.commit()
         
         return {
@@ -345,6 +347,11 @@ async def create_test_run(test_run: TestRunCreate):
             "results": results
         }
         
+    except Exception as e:
+        # Rollback any database changes if an error occurs
+        db.rollback()
+        print(f"Test run failed, rolling back database changes: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Test run failed: {str(e)}")
     finally:
         db.close()
 
