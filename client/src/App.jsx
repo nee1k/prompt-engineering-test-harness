@@ -1,6 +1,5 @@
 import React from 'react'
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
-import PromptSystemForm from './components/PromptSystemForm'
 import TestRunForm from './components/TestRunForm'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
@@ -24,12 +23,7 @@ function App() {
           >
             Prompt Systems
           </Link>
-          <Link 
-            to="/create" 
-            className={location.pathname === '/create' ? 'active' : ''}
-          >
-            Create System
-          </Link>
+
           <Link 
             to="/test" 
             className={location.pathname === '/test' ? 'active' : ''}
@@ -54,11 +48,9 @@ function App() {
 
         <Routes>
           <Route path="/" element={<PromptSystemsList />} />
-          <Route path="/create" element={<PromptSystemForm />} />
           <Route path="/test" element={<TestRunForm />} />
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/alerts" element={<Alerts />} />
-
         </Routes>
       </div>
     </div>
