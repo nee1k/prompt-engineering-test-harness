@@ -254,16 +254,8 @@ function PromptSystemsList() {
       
       {promptSystems.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-            </svg>
-          </div>
           <h3>No Prompt Systems Found</h3>
           <p>Create your first prompt system to get started with testing and evaluation.</p>
-          <button className="btn btn-primary" onClick={() => setCreateSystemModal(true)}>
-            Create Your First System
-          </button>
         </div>
       ) : (
         <div className="table-container">
@@ -303,7 +295,7 @@ function PromptSystemsList() {
                   <td>
                     <div className="metrics-display">
                       <div className="metric-item">
-                        <span className="metric-label">Avg</span>
+                        <span className="metric-label">Score</span>
                         <span className="metric-value score-{getSystemMetrics(system.id).avgScore >= 0.8 ? 'high' : getSystemMetrics(system.id).avgScore >= 0.6 ? 'medium' : 'low'}">
                           {getSystemMetrics(system.id).avgScore}
                         </span>
