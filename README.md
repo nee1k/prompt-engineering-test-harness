@@ -1,9 +1,7 @@
-# Prompt Engineering Test Harness
+<h1 align="center">Prompt Engineering Test Harness</h1>
 
 <div align="center">
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Docker](https://img.shields.io/badge/docker-ready-blue.svg)
 
 **A comprehensive testing framework for LLM prompt systems with automated evaluation and scheduling**
 
@@ -22,7 +20,6 @@
 - ⏰ **Scheduled Testing**: Automate test runs with configurable intervals
 - 📧 **Email Alerts**: Get notified when performance drops or tests fail
 - 🔄 **Multi-Provider Support**: Test with OpenAI, Ollama, and custom providers
-- 📈 **Visual Analytics**: View trends and performance metrics
 - 🎯 **Flexible Evaluation**: Fuzzy matching, exact match, semantic similarity
 - 🐳 **Docker Ready**: Complete containerized setup with PostgreSQL and Redis
 
@@ -56,7 +53,6 @@
 4. **Access the application:**
    Open [http://localhost](http://localhost) in your browser
 
-**That's it!** 🎉 The application is now running with PostgreSQL, Redis, and all services.
 
 ## ⚙️ Configuration
 
@@ -164,7 +160,6 @@ text,language,expected_output
 - **History**: View all test runs for each system
 - **Trends**: Track performance over time
 - **Alerts**: Receive email notifications when scores drop
-- **Analytics**: Detailed metrics and performance insights
 
 ## 🔧 Tech Stack
 
@@ -237,76 +232,9 @@ Download from [Ollama.ai](https://ollama.ai/download)
    - Select "Ollama" as provider when creating prompt systems
    - Choose your local model from the dropdown
 
-## 📊 API Reference
-
-### Core Endpoints
-
-- `GET /` - Health check
-- `GET /models/` - Available models
-- `GET /prompt-systems/` - List prompt systems
-- `POST /prompt-systems/` - Create prompt system
-- `POST /test-runs/` - Run manual test
-- `GET /test-runs/{id}` - Get test results
-- `POST /test-schedules/` - Create schedule
-- `GET /test-schedules/` - List schedules
-
-### Evaluation Functions
+## Evaluation Functions
 
 - `fuzzy` - String similarity (0.0-1.0)
 - `exact` - Perfect match (0.0 or 1.0)
 - `semantic` - Semantic similarity
 - `contains` - Substring matching
-
-## 🚀 Deployment
-
-### Production Setup
-
-1. **Environment Configuration:**
-   ```bash
-   cp .env.example .env
-   # Configure production settings
-   ```
-
-2. **Docker Compose:**
-   ```bash
-   docker-compose -f docker-compose.yml up -d
-   ```
-
-3. **Nginx Configuration:**
-   - Update `nginx.conf` for your domain
-   - Configure SSL certificates
-   - Set up reverse proxy
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `OPENAI_API_KEY` | Yes | OpenAI API key |
-| `SMTP_SERVER` | No | SMTP server for emails |
-| `SMTP_USERNAME` | No | SMTP username |
-| `SMTP_PASSWORD` | No | SMTP password |
-| `OLLAMA_HOST` | No | Ollama host (default: host.docker.internal) |
-
-
-
-
-
-## 📝 Notes
-
-This is a take-home interview project demonstrating:
-- Full-stack development with React and FastAPI
-- Docker containerization and orchestration
-- LLM integration and prompt engineering
-- Automated testing and monitoring systems
-- Email notification systems
-- Database design and management
-
----
-
-<div align="center">
-
-**Take-Home Interview Project - Prompt Engineering Test Harness**
-
-Demonstrating modern full-stack development practices and LLM integration
-
-</div>
