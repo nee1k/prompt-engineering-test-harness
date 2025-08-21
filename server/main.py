@@ -567,7 +567,7 @@ async def create_model_comparison(comparison: ModelComparisonCreate):
                         )
                     
                     # Evaluate the response
-                    score = evaluate_response(response, sample.get("expected_output", ""), comparison.evaluation_function)
+                    score = evaluate_output(response, sample.get("expected_output", ""), comparison.evaluation_function)
                     total_score += score
                 
                 avg_score = total_score / total_samples if total_samples > 0 else 0
