@@ -1,30 +1,51 @@
-# Prompt Engineering Test Harness
+<h1 align="center">Prompt Engineering Test Harness</h1>
 
-> **A lightweight application for monitoring and evaluating LLM prompt systems**
+> **A comprehensive testing framework for LLM prompt systems with automated evaluation and scheduling**
 
-Define prompt templates, upload test datasets, and run automated evaluations with detailed scoring.
+Create prompt templates with variables, upload regression test datasets, run evaluations with scoring functions, and schedule automated testing workflows. Monitor performance over time with detailed results and notifications.
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
-- **Docker** and **Docker Compose**
+- [Docker](https://www.docker.com/get-started) and [Docker Compose](https://docs.docker.com/compose) installed and running.
 - **OpenAI API key** (optional - can use Ollama for local models)
+- Copy `.env.example` to `.env` and fill in your API keys and settings:
 
-1. **Clone and start:**
+**Clone and start:**
    ```bash
    git clone https://github.com/nee1k/prompt-systems-monitor.git
+   cd prompt-systems-monitor
+   cp .env.example .env
+   # Edit .env with your API keys and email settings
    docker-compose up -d
    ```
+Go to [http://localhost](http://localhost) to access the application.
 
-2. **Access the application:**
-   - 🌐 **Frontend**: http://localhost
-   - 📚 **API Docs**: http://localhost/api/docs
+## ⚙️ Configuration
 
-### Environment Setup (Optional)
-```bash
-# Add your OpenAI API key (only needed for OpenAI models)
-echo "OPENAI_API_KEY=your_key_here" >> .env
-```
+### Environment Setup
+1. **Copy the example environment file:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Configure your API keys and settings:**
+   ```bash
+   # Required: OpenAI API Key
+   OPENAI_API_KEY=your_openai_api_key_here
+   
+   # Optional: Email notifications (Gmail recommended)
+   SMTP_SERVER=smtp.gmail.com
+   SMTP_USERNAME=your_email@gmail.com
+   SMTP_PASSWORD=your_16_character_app_password
+   FROM_EMAIL=your_email@gmail.com
+   ```
+
+3. **Gmail App Password Setup:**
+   - Enable 2-Factor Authentication on your Google account
+   - Go to Google Account → Security → App passwords → Mail
+   - Generate a 16-character App Password
+   - Use this App Password (not your regular Gmail password)
 
 ## 📖 Usage
 
