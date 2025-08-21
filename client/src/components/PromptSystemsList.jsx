@@ -393,19 +393,44 @@ function PromptSystemsList() {
       )}
       
       {/* Action Buttons */}
-      <div className="action-buttons-section">
-                  <button 
-            className="btn btn-primary btn-large"
-            onClick={() => setCreateSystemModal(true)}
-          >
-            Create New Prompt System
-          </button>
-                  <button 
-            className="btn btn-secondary btn-large"
-            onClick={() => setTestSystemModal(true)}
-          >
-            Test a System
-          </button>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
+        <button
+          className="btn btn-large"
+          style={{
+            background: 'linear-gradient(90deg, #4f8cff 0%, #38d9a9 100%)',
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(79,140,255,0.15)',
+            fontWeight: 600,
+            fontSize: '1.1rem',
+            padding: '0.7rem 2.2rem',
+            borderRadius: '0.5rem',
+            transition: 'background 0.2s',
+            cursor: 'pointer',
+            marginRight: '1rem'
+          }}
+          onClick={() => setCreateSystemModal(true)}
+        >
+          Create Prompt System
+        </button>
+        <button
+          className="btn btn-large"
+          style={{
+            background: 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%)',
+            color: '#fff',
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(255,126,95,0.15)',
+            fontWeight: 600,
+            fontSize: '1.1rem',
+            padding: '0.7rem 2.2rem',
+            borderRadius: '0.5rem',
+            transition: 'background 0.2s',
+            cursor: 'pointer'
+          }}
+          onClick={() => setTestSystemModal(true)}
+        >
+          Test Prompt System
+        </button>
       </div>
 
       {/* History Modal */}

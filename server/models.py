@@ -20,6 +20,7 @@ class PromptSystem(Base):
 
     test_runs = relationship("TestRun", back_populates="prompt_system")
     test_schedules = relationship("TestSchedule", back_populates="prompt_system")
+    model_comparisons = relationship("ModelComparison", back_populates="prompt_system")
 
 class TestRun(Base):
     __tablename__ = "test_runs"
@@ -68,5 +69,35 @@ class TestSchedule(Base):
 
     prompt_system = relationship("PromptSystem", back_populates="test_schedules")
     test_runs = relationship("TestRun", back_populates="test_schedule")
+
+class ModelComparison(Base):
+    __tablename__ = "model_comparisons"
+
+    id = Column(String, primary_key=True, index=True)
+    prompt_system_id = Column(String, ForeignKey("prompt_systems.id"), nullable=True)
+    prompt_template = Column(Text, nullable=True)  # Store the prompt template directly
+    template_variables = Column(Text, nullable=True)  # JSON array of template variables
+    model_settings = Column(Text, nullable=True)  # JSON object of model settings
+    models = Column(Text)  # JSON array of model IDs
+    regression_set = Column(Text)  # JSON string of regression set
+    evaluation_function = Column(String, default="fuzzy")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    prompt_system = relationship("PromptSystem", back_populates="model_comparisons")
+    results = relationship("ModelComparisonResult", back_populates="model_comparison")
+
+class ModelComparisonResult(Base):
+    __tablename__ = "model_comparison_results"
+
+    id = Column(String, primary_key=True, index=True)
+    model_comparison_id = Column(String, ForeignKey("model_comparisons.id"))
+    model = Column(String)  # Model ID
+    provider = Column(String)  # "openai" or "ollama"
+    avg_score = Column(Float)
+    total_samples = Column(Integer)
+    status = Column(String, default="completed")  # "completed", "failed", "running"
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    model_comparison = relationship("ModelComparison", back_populates="results")
 
 

@@ -411,10 +411,21 @@ function TestSchedules() {
         )}
       </div>
       
-      {/* Create Schedule Button */}
-      <div className="create-schedule-section">
-        <button 
-          className="btn btn-primary btn-large"
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem 0' }}>
+        <button
+          className="btn btn-large"
+          style={{
+            background: 'linear-gradient(90deg, var(--primary-color, #1976d2) 0%, var(--secondary-color, #43cea2) 100%)',
+            color: 'var(--button-text-color, #fff)',
+            border: 'none',
+            boxShadow: '0 2px 8px rgba(25, 118, 210, 0.15)',
+            fontWeight: 600,
+            fontSize: '1.1rem',
+            padding: '0.7rem 2.2rem',
+            borderRadius: '0.5rem',
+            transition: 'background 0.2s',
+            cursor: 'pointer'
+          }}
           onClick={() => setCreateScheduleModal(true)}
         >
           Create New Schedule

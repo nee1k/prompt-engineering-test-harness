@@ -11,7 +11,7 @@ import os
 import httpx
 from dotenv import load_dotenv
 from database import engine, SessionLocal
-from models import Base, PromptSystem, TestRun, TestResult, TestSchedule
+from models import Base, PromptSystem, TestRun, TestResult, TestSchedule, ModelComparison, ModelComparisonResult
 from sqlalchemy.orm import joinedload
 import uuid
 from datetime import datetime
@@ -66,6 +66,14 @@ class TestScheduleCreate(BaseModel):
     email_notifications: bool = False
     email_recipients: List[str] = []
     alert_threshold: float = 0.2
+
+class ModelComparisonCreate(BaseModel):
+    prompt_template: str
+    template_variables: List[str]
+    model_settings: Dict[str, Any]
+    models: List[str]
+    regression_set: List[Dict[str, Any]]
+    evaluation_function: str = "fuzzy"
 
 
 
@@ -503,6 +511,153 @@ async def delete_test_schedule(schedule_id: str):
 
 
 
+# Model comparison endpoints
+@app.post("/model-comparisons/")
+async def create_model_comparison(comparison: ModelComparisonCreate):
+    db = SessionLocal()
+    try:
+        # Create the comparison record
+        comparison_id = str(uuid.uuid4())
+        db_comparison = ModelComparison(
+            id=comparison_id,
+            prompt_system_id=None,  # No prompt system ID for direct template comparison
+            prompt_template=comparison.prompt_template,
+            template_variables=json.dumps(comparison.template_variables),
+            model_settings=json.dumps(comparison.model_settings),
+            models=json.dumps(comparison.models),
+            regression_set=json.dumps(comparison.regression_set),
+            evaluation_function=comparison.evaluation_function
+        )
+        db.add(db_comparison)
+        db.commit()
+        
+        results = []
+        
+        # Run tests for each model
+        for model_id in comparison.models:
+            try:
+                # Determine provider based on model ID
+                provider = "openai" if model_id.startswith("gpt-") else "ollama"
+                
+                # Run the test
+                total_score = 0
+                total_samples = len(comparison.regression_set)
+                
+                for sample in comparison.regression_set:
+                    # Format the prompt with variables
+                    prompt = comparison.prompt_template
+                    for var in comparison.template_variables:
+                        if var in sample:
+                            prompt = prompt.replace(f"{{{var}}}", str(sample[var]))
+                    
+                    # Call the appropriate API
+                    if provider == "openai":
+                        response = await call_openai(
+                            prompt, model_id, comparison.model_settings.get("temperature", 0.7), 
+                            comparison.model_settings.get("max_tokens", 1000), 
+                            comparison.model_settings.get("top_p", 1.0), 
+                            comparison.model_settings.get("top_k")
+                        )
+                    else:
+                        response = await call_ollama(
+                            prompt, model_id, comparison.model_settings.get("temperature", 0.7), 
+                            comparison.model_settings.get("max_tokens", 1000), 
+                            comparison.model_settings.get("top_p", 1.0), 
+                            comparison.model_settings.get("top_k")
+                        )
+                    
+                    # Evaluate the response
+                    score = evaluate_response(response, sample.get("expected_output", ""), comparison.evaluation_function)
+                    total_score += score
+                
+                avg_score = total_score / total_samples if total_samples > 0 else 0
+                
+                # Save the result
+                result = ModelComparisonResult(
+                    id=str(uuid.uuid4()),
+                    model_comparison_id=comparison_id,
+                    model=model_id,
+                    provider=provider,
+                    avg_score=avg_score,
+                    total_samples=total_samples,
+                    status="completed"
+                )
+                db.add(result)
+                results.append({
+                    "model": model_id,
+                    "provider": provider,
+                    "avg_score": avg_score,
+                    "total_samples": total_samples,
+                    "status": "completed"
+                })
+                
+            except Exception as e:
+                # Save failed result
+                result = ModelComparisonResult(
+                    id=str(uuid.uuid4()),
+                    model_comparison_id=comparison_id,
+                    model=model_id,
+                    provider=provider if 'provider' in locals() else "unknown",
+                    avg_score=0.0,
+                    total_samples=0,
+                    status="failed"
+                )
+                db.add(result)
+                results.append({
+                    "model": model_id,
+                    "provider": provider if 'provider' in locals() else "unknown",
+                    "avg_score": 0.0,
+                    "total_samples": 0,
+                    "status": "failed"
+                })
+                print(f"Error testing model {model_id}: {e}")
+        
+        db.commit()
+        return {"id": comparison_id, "results": results}
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        db.close()
+
+@app.get("/model-comparisons/")
+async def get_model_comparisons():
+    db = SessionLocal()
+    try:
+        comparisons = db.query(ModelComparison).order_by(ModelComparison.created_at.desc()).all()
+        result = []
+        
+        for comparison in comparisons:
+            results = db.query(ModelComparisonResult).filter(
+                ModelComparisonResult.model_comparison_id == comparison.id
+            ).all()
+            
+            result.append({
+                "id": comparison.id,
+                "prompt_system_id": comparison.prompt_system_id,
+                "prompt_template": comparison.prompt_template,
+                "template_variables": json.loads(comparison.template_variables) if comparison.template_variables else [],
+                "model_settings": json.loads(comparison.model_settings) if comparison.model_settings else {},
+                "models": json.loads(comparison.models),
+                "regression_set": json.loads(comparison.regression_set),
+                "evaluation_function": comparison.evaluation_function,
+                "created_at": comparison.created_at,
+                "results": [
+                    {
+                        "model": r.model,
+                        "provider": r.provider,
+                        "avg_score": r.avg_score,
+                        "total_samples": r.total_samples,
+                        "status": r.status
+                    } for r in results
+                ]
+            })
+        
+        return result
+    finally:
+        db.close()
+
 # Time-series data endpoint
 @app.get("/test-runs/{prompt_system_id}/history")
 async def get_test_run_history(prompt_system_id: str, days: int = 7):
@@ -558,6 +713,22 @@ async def startup_event():
         print("Email notification migration completed")
     except Exception as e:
         print(f"Email notification migration error: {e}")
+    
+    # Run model comparison migration
+    try:
+        from migrate_model_comparison import run_migration
+        run_migration()
+        print("Model comparison migration completed")
+    except Exception as e:
+        print(f"Model comparison migration error: {e}")
+    
+    # Run model comparison v2 migration
+    try:
+        from migrate_model_comparison_v2 import run_migration
+        run_migration()
+        print("Model comparison v2 migration completed")
+    except Exception as e:
+        print(f"Model comparison v2 migration error: {e}")
     
     # Load existing schedules
     await scheduler.load_existing_schedules()

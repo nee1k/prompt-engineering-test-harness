@@ -5,8 +5,6 @@
 
 **A comprehensive testing framework for LLM prompt systems with automated evaluation and scheduling**
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Configuration](#️-configuration) • [Usage](#-usage) • [API Reference](#-api-reference)
-
 </div>
 
 ---
@@ -21,6 +19,7 @@
 - 📧 **Email Alerts**: Get notified when performance drops or tests fail
 - 🔄 **Multi-Provider Support**: Test with OpenAI, Ollama, and custom providers
 - 🎯 **Flexible Evaluation**: Fuzzy matching, exact match, semantic similarity
+- 🔍 **Model Comparison**: Test your prompt systems across different AI models
 - 🐳 **Docker Ready**: Complete containerized setup with PostgreSQL and Redis
 
 ## 🚀 Quick Start
@@ -155,11 +154,32 @@ text,language,expected_output
    - **Email Notifications**: Enable alerts for performance drops
    - **Test Data**: Upload your regression set
 
-### 6. Monitor Performance
+### 6. Compare Models
+
+1. Go to **"Compare Models"** tab
+2. **Enter Prompt Template**: Create a prompt template with `{variable}` placeholders
+3. **Configure Model Settings**: Set temperature, max tokens, top_p, and top_k parameters
+4. **Select Models**: Choose multiple AI models to compare (OpenAI and Ollama)
+5. **Choose Evaluation Function**: Select how to evaluate the responses
+6. **Upload Test Data**: Upload CSV file with test cases and expected outputs
+7. **Run Comparison**: Execute tests across all selected models
+8. **View Results**: Compare performance metrics side-by-side
+
+**Features:**
+- **Direct Template Testing**: Test prompt templates without creating prompt systems
+- **Multi-Model Testing**: Test your prompts on different AI models simultaneously
+- **Performance Comparison**: Side-by-side score comparison
+- **Provider Support**: Compare OpenAI and Ollama models
+- **Historical Tracking**: Keep track of all model comparisons
+- **Detailed Analysis**: View individual model performance and trends
+- **Flexible Configuration**: Adjust model parameters for each comparison
+
+### 7. Monitor Performance
 
 - **History**: View all test runs for each system
 - **Trends**: Track performance over time
 - **Alerts**: Receive email notifications when scores drop
+- **Model Comparisons**: Track how different models perform with your prompts
 
 ## 🔧 Tech Stack
 
