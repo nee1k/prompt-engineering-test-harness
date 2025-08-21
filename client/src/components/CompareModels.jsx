@@ -6,25 +6,30 @@ const API_BASE = window.location.hostname === 'localhost' && window.location.por
   : '/api'
 
 function CompareModels() {
-  const [availableModels, setAvailableModels] = useState({})
-  const [selectedModels, setSelectedModels] = useState([])
+  // Core state
+  const [promptTemplate, setPromptTemplate] = useState('')
   const [regressionSet, setRegressionSet] = useState([])
-  const [file, setFile] = useState(null)
+  const [selectedModels, setSelectedModels] = useState([])
+  const [selectedEvaluationFunction, setSelectedEvaluationFunction] = useState('fuzzy')
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  
+  // File uploads
+  const [promptFile, setPromptFile] = useState(null)
+  const [regressionFile, setRegressionFile] = useState(null)
+  
+  // API data
+  const [availableModels, setAvailableModels] = useState({})
+  const [evaluationFunctions, setEvaluationFunctions] = useState([])
+  const [comparisonHistory, setComparisonHistory] = useState([])
+  
+  // UI state
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [comparisonResults, setComparisonResults] = useState([])
-  const [evaluationFunctions, setEvaluationFunctions] = useState([])
-  const [selectedEvaluationFunction, setSelectedEvaluationFunction] = useState('fuzzy')
-  const [comparisonHistory, setComparisonHistory] = useState([])
+  const [modelSearch, setModelSearch] = useState('')
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   
-  // UI enhancements
-  const [modelSearch, setModelSearch] = useState('')
-  const [showAdvanced, setShowAdvanced] = useState(false)
-  
-  // New state for prompt template
-  const [promptTemplate, setPromptTemplate] = useState('')
-  const [templateVariables, setTemplateVariables] = useState([])
+  // Advanced settings
   const [modelSettings, setModelSettings] = useState({
     temperature: 0.7,
     max_tokens: 1000,
@@ -51,12 +56,9 @@ function CompareModels() {
     return variables
   }
 
-  // Update template variables when prompt template changes
-  useEffect(() => {
-    const variables = extractVariables(promptTemplate)
-    setTemplateVariables(variables)
-  }, [promptTemplate])
+  const templateVariables = extractVariables(promptTemplate)
 
+  // API calls
   const fetchAvailableModels = async () => {
     try {
       const response = await axios.get(`${API_BASE}/models/`)
@@ -85,32 +87,58 @@ function CompareModels() {
     }
   }
 
-  const handleFileUpload = async (e) => {
+  // File upload handlers
+  const handlePromptFileUpload = async (e) => {
     const file = e.target.files[0]
     if (!file) return
 
-    setFile(file)
+    setPromptFile(file)
     setLoading(true)
     setMessage('')
 
-    const formData = new FormData()
-    formData.append('file', file)
-
     try {
-      const response = await axios.post(`${API_BASE}/upload-regression-set/`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await axios.post(`${API_BASE}/upload-prompt-template/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
       })
-      setRegressionSet(response.data.regression_set)
-      setMessage(`Successfully loaded ${response.data.regression_set.length} samples`)
+      
+      setPromptTemplate(response.data.template)
+      setMessage('Prompt template uploaded successfully!')
     } catch (error) {
-      setMessage(`Error: ${error.response?.data?.detail || error.message}`)
+      setMessage(`Error uploading prompt template: ${error.response?.data?.detail || error.message}`)
     } finally {
       setLoading(false)
     }
   }
 
+  const handleRegressionFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    setRegressionFile(file)
+    setLoading(true)
+    setMessage('')
+
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      
+      const response = await axios.post(`${API_BASE}/upload-regression-set/`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      
+      setRegressionSet(response.data.regression_set)
+      setMessage(`Regression set uploaded successfully! Loaded ${response.data.regression_set.length} samples`)
+    } catch (error) {
+      setMessage(`Error uploading regression set: ${error.response?.data?.detail || error.message}`)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Model selection
   const handleModelToggle = (modelId) => {
     setSelectedModels(prev => 
       prev.includes(modelId) 
@@ -119,10 +147,32 @@ function CompareModels() {
     )
   }
 
+  // Manual regression set input
+  const handleManualRegressionInput = (e) => {
+    try {
+      const data = JSON.parse(e.target.value)
+      setRegressionSet(Array.isArray(data) ? data : [data])
+    } catch (error) {
+      // Allow partial input while typing
+    }
+  }
+
+  // Run comparison
   const handleRunComparison = async (e) => {
     e.preventDefault()
-    if (!promptTemplate || selectedModels.length === 0 || regressionSet.length === 0) {
-      setMessage('Please enter a prompt template, select at least one model, and upload a regression set')
+    
+    if (!promptTemplate.trim()) {
+      setMessage('Please enter or upload a prompt template')
+      return
+    }
+    
+    if (regressionSet.length === 0) {
+      setMessage('Please upload or enter regression set data')
+      return
+    }
+    
+    if (selectedModels.length === 0) {
+      setMessage('Please select at least one model to compare')
       return
     }
 
@@ -142,7 +192,7 @@ function CompareModels() {
       
       setComparisonResults(response.data.results)
       setMessage('Model comparison completed successfully!')
-      fetchComparisonHistory() // Refresh history
+      fetchComparisonHistory()
     } catch (error) {
       setMessage(`Error: ${error.response?.data?.detail || error.message}`)
     } finally {
@@ -150,20 +200,14 @@ function CompareModels() {
     }
   }
 
+  // Utility functions
   const getScoreClass = (score) => {
     if (score >= 0.8) return 'high'
     if (score >= 0.5) return 'medium'
     return 'low'
   }
 
-  const getScoreColor = (score) => {
-    if (score >= 0.8) return 'text-green-600'
-    if (score >= 0.5) return 'text-yellow-600'
-    return 'text-red-600'
-  }
-
   const formatModelName = (modelId) => {
-    // Extract model name from ID (e.g., "gpt-4" -> "GPT-4")
     return modelId.split('-').map(word => 
       word.charAt(0).toUpperCase() + word.slice(1)
     ).join(' ')
@@ -174,115 +218,108 @@ function CompareModels() {
   }
 
   return (
-    <div className="prompt-systems-container">
+    <div className="run-test-container">
+      {message && (
+        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+          {message}
+        </div>
+      )}
 
-      {/* Setup Form */}
-      <div className="table-container" style={{ padding: '16px' }}>
-        <h2 style={{ marginBottom: '12px' }}>Setup Comparison</h2>
-        
-        <form onSubmit={handleRunComparison}>
-          {/* 1. Prompt Template */}
+      <div className="test-form-container">
+        <form onSubmit={handleRunComparison} className="test-form">
+          
+          {/* Prompt Template Section */}
           <div className="form-group">
-            <label>1. Prompt Template</label>
-            <textarea
-              value={promptTemplate}
-              onChange={(e) => setPromptTemplate(e.target.value)}
-              placeholder="Enter your prompt template with {variable} placeholders..."
-              required
-            />
-            {templateVariables.length > 0 && (
-              <small>Detected variables: {templateVariables.join(', ')}</small>
-            )}
-          </div>
-
-          {/* Model Settings */}
-          {showAdvanced && (
-            <div>
-              <div className="form-group">
-                <label>Temperature <small>(0 = deterministic, higher = more creative)</small></label>
+            <label>Prompt Template:</label>
+            <div className="input-section">
+              <div className="input-tabs">
+                <button
+                  type="button"
+                  className="tab-button active"
+                  onClick={() => setPromptTemplate('')}
+                >
+                  Enter Manually
+                </button>
+                <button
+                  type="button"
+                  className="tab-button"
+                  onClick={() => document.getElementById('prompt-file-input').click()}
+                >
+                  Upload File
+                </button>
                 <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="2"
-                  value={modelSettings.temperature}
-                  onChange={(e) => setModelSettings(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                  id="prompt-file-input"
+                  type="file"
+                  accept=".txt,.md"
+                  onChange={handlePromptFileUpload}
+                  style={{ display: 'none' }}
                 />
               </div>
-              <div className="form-group">
-                <label>Max Tokens <small>(limit response length)</small></label>
-                <input
-                  type="number"
-                  min="1"
-                  value={modelSettings.max_tokens}
-                  onChange={(e) => setModelSettings(prev => ({ ...prev, max_tokens: parseInt(e.target.value) }))}
-                />
-              </div>
-              <div className="form-group">
-                <label>Top P <small>(nucleus sampling)</small></label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0"
-                  max="1"
-                  value={modelSettings.top_p}
-                  onChange={(e) => setModelSettings(prev => ({ ...prev, top_p: parseFloat(e.target.value) }))}
-                />
-              </div>
-              <div className="form-group">
-                <label>Top K <small>(Ollama only)</small></label>
-                <input
-                  type="number"
-                  min="1"
-                  value={modelSettings.top_k || ''}
-                  onChange={(e) => setModelSettings(prev => ({ ...prev, top_k: e.target.value ? parseInt(e.target.value) : null }))}
-                  placeholder="Leave empty"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* 2. Model Selection */}
-          <div className="form-group">
-            <label>2. Select Models to Compare</label>
-            <div className="table-container" style={{ padding: 0 }}>
-              {Object.entries(availableModels).map(([provider, models]) => (
-                <div key={provider} style={{ marginBottom: '12px' }}>
-                  <h4 style={{ margin: '8px 0' }}>{getProviderName(provider)}</h4>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                    {models
-                      .filter(m => !modelSearch || m.name.toLowerCase().includes(modelSearch.toLowerCase()))
-                      .map((model) => (
-                        <label key={model.id} className="checkbox-label" style={{ minWidth: '240px' }}>
-                          <div className="checkbox-container">
-                            <input
-                              type="checkbox"
-                              className="checkbox-input"
-                              checked={selectedModels.includes(model.id)}
-                              onChange={() => handleModelToggle(model.id)}
-                            />
-                            <div className="checkbox-custom">
-                              <svg className="checkbox-icon" viewBox="0 0 24 24" fill="none">
-                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </div>
-                          </div>
-                          <span className="checkbox-text">{model.name}</span>
-                        </label>
-                      ))}
-                  </div>
+              <textarea
+                value={promptTemplate}
+                onChange={(e) => setPromptTemplate(e.target.value)}
+                placeholder="Enter your prompt template with {variable} placeholders..."
+                required
+                rows={6}
+              />
+              {templateVariables.length > 0 && (
+                <div className="variables-display">
+                  <small>Detected variables: {templateVariables.join(', ')}</small>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
-          {/* 3. Evaluation Function */}
+          {/* Regression Set Section */}
           <div className="form-group">
-            <label>3. Evaluation Function</label>
+            <label>Regression Set:</label>
+            <div className="input-section">
+              <div className="input-tabs">
+                <button
+                  type="button"
+                  className="tab-button active"
+                  onClick={() => setRegressionSet([])}
+                >
+                  Enter Manually
+                </button>
+                <button
+                  type="button"
+                  className="tab-button"
+                  onClick={() => document.getElementById('regression-file-input').click()}
+                >
+                  Upload File
+                </button>
+                <input
+                  id="regression-file-input"
+                  type="file"
+                  accept=".csv,.jsonl"
+                  onChange={handleRegressionFileUpload}
+                  style={{ display: 'none' }}
+                />
+              </div>
+              <textarea
+                value={regressionSet.length > 0 ? JSON.stringify(regressionSet, null, 2) : ''}
+                onChange={handleManualRegressionInput}
+                placeholder="Enter JSON array of test cases with variables and expected_output..."
+                rows={6}
+              />
+              {regressionSet.length > 0 && (
+                <div className="regression-preview">
+                  <small>Loaded {regressionSet.length} test samples</small>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Evaluation Function Section */}
+          <div className="form-group">
+            <label>Evaluation Function:</label>
             <select
               value={selectedEvaluationFunction}
               onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
+              required
             >
+              <option value="">Select evaluation function...</option>
               {Array.isArray(evaluationFunctions) && evaluationFunctions.map((func) => {
                 const value = typeof func === 'string' ? func : (func.id || '')
                 const label = typeof func === 'string' ? func : (func.name || func.id || '')
@@ -296,111 +333,221 @@ function CompareModels() {
             </select>
           </div>
 
-          {/* 4. Regression Set Upload */}
+          {/* Models Selection Section */}
           <div className="form-group">
-            <label>4. Upload Regression Set (CSV or JSONL)</label>
-            <div className="file-upload-container">
-              <div className="file-upload" onClick={() => document.getElementById('compare-file-input').click()}>
-                <input
-                  id="compare-file-input"
-                  type="file"
-                  accept=".csv,.jsonl"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                />
-                <div className="upload-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                  </svg>
+            <label>Select Models to Compare:</label>
+            <div className="model-selection-container">
+              <div className="model-selection-header">
+                <div className="search-container">
+                  <input
+                    type="text"
+                    placeholder="Search models..."
+                    value={modelSearch}
+                    onChange={(e) => setModelSearch(e.target.value)}
+                    className="search-input"
+                  />
                 </div>
-                <div className="upload-content">
-                  <p className="upload-title">{file ? file.name : 'Click to select file'}</p>
-                  <p className="upload-description">File should contain columns for variables and an 'expected_output' column</p>
-                  {!file && <p className="upload-hint">Supports .csv and .jsonl files</p>}
+                <div className="selection-summary">
+                  <span>{selectedModels.length} selected</span>
+                  {selectedModels.length > 0 && (
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-secondary"
+                      onClick={() => setSelectedModels([])}
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+              </div>
+              
+              <div className="model-list">
+                {Object.entries(availableModels).map(([provider, models]) => {
+                  const filteredModels = models.filter(m => 
+                    !modelSearch || m.name.toLowerCase().includes(modelSearch.toLowerCase())
+                  )
+                  
+                  if (filteredModels.length === 0) return null
+                  
+                  return (
+                    <div key={provider} className="provider-section">
+                      <div className="provider-header">
+                        <h4>{getProviderName(provider)}</h4>
+                        <span className="model-count">{filteredModels.length} models</span>
+                      </div>
+                      <div className="models-grid">
+                        {filteredModels.map((model) => {
+                          const isSelected = selectedModels.includes(model.id)
+                          return (
+                            <label key={model.id} className="model-item">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => handleModelToggle(model.id)}
+                              />
+                              <div className="model-info">
+                                <div className="model-name">{model.name}</div>
+                                <div className="model-provider">{getProviderName(provider)}</div>
+                              </div>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Advanced Settings */}
+          <div className="form-group">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+            >
+              {showAdvanced ? 'Hide' : 'Show'} Advanced Settings
+            </button>
+          </div>
+
+          {showAdvanced && (
+            <div className="advanced-settings">
+              <h4>Advanced Model Settings</h4>
+              <div className="settings-grid">
+                <div className="form-group">
+                  <label>Temperature:</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="2"
+                    value={modelSettings.temperature}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, temperature: parseFloat(e.target.value) }))}
+                  />
+                  <small>0 = deterministic, higher = more creative</small>
+                </div>
+                <div className="form-group">
+                  <label>Max Tokens:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={modelSettings.max_tokens}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, max_tokens: parseInt(e.target.value) }))}
+                  />
+                  <small>Limit response length</small>
+                </div>
+                <div className="form-group">
+                  <label>Top P:</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    value={modelSettings.top_p}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, top_p: parseFloat(e.target.value) }))}
+                  />
+                  <small>Nucleus sampling</small>
+                </div>
+                <div className="form-group">
+                  <label>Top K:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={modelSettings.top_k || ''}
+                    onChange={(e) => setModelSettings(prev => ({ ...prev, top_k: e.target.value ? parseInt(e.target.value) : null }))}
+                    placeholder="Leave empty"
+                  />
+                  <small>Ollama only</small>
                 </div>
               </div>
             </div>
-            {regressionSet.length > 0 && (
-              <small>Loaded {regressionSet.length} test samples</small>
-            )}
-          </div>
+          )}
 
-          {/* Run Button */}
+          {/* Compare Button */}
           <div className="form-actions">
             <button
               type="submit"
               className="btn btn-primary"
               disabled={loading || !promptTemplate || selectedModels.length === 0 || regressionSet.length === 0}
             >
-              {loading ? 'Running Comparison...' : 'Run Model Comparison'}
+              {loading ? 'Running Comparison...' : 'Compare Models'}
             </button>
           </div>
         </form>
-
-        {message && (
-          <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
-            {message}
-          </div>
-        )}
       </div>
 
       {/* Comparison Results */}
       {comparisonResults.length > 0 && (
-        <div className="table-container">
-          <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2>Comparison Results</h2>
-            <small>Sorted by score (desc)</small>
+        <div className="results-container">
+          <div className="results-header">
+            <h3>Comparison Results</h3>
+            <div className="results-summary">
+              <div className="summary-item">
+                <span className="summary-label">Models Tested:</span>
+                <span className="summary-value">{comparisonResults.length}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Best Score:</span>
+                <span className={`score ${getScoreClass(Math.max(...comparisonResults.map(r => r.avg_score || 0)))}`}>
+                  {(Math.max(...comparisonResults.map(r => r.avg_score || 0)) * 100).toFixed(1)}%
+                </span>
+              </div>
+            </div>
           </div>
-          <table className="systems-table">
-            <thead>
-              <tr>
-                <th>Model</th>
-                <th>Provider</th>
-                <th>Average Score</th>
-                <th>Total Samples</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {comparisonResults
-                .slice()
-                .sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0))
-                .map((result, index) => (
-                  <tr key={index}>
-                    <td>{formatModelName(result.model)}</td>
-                    <td>{getProviderName(result.provider)}</td>
-                    <td>
-                      <span className={`score-badge ${getScoreClass(result.avg_score || 0)}`}>
-                        {(typeof result.avg_score === 'number' ? result.avg_score : 0).toFixed(3)}
-                      </span>
-                    </td>
-                    <td>{result.total_samples}</td>
-                    <td>
-                      <span className={`status-badge ${result.status === 'completed' ? 'active' : 'inactive'}`}>
-                        {result.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+
+          <div className="results-table-container">
+            <table className="results-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Provider</th>
+                  <th>Average Score</th>
+                  <th>Total Samples</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparisonResults
+                  .slice()
+                  .sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0))
+                  .map((result, index) => (
+                    <tr key={index}>
+                      <td>{formatModelName(result.model)}</td>
+                      <td>{getProviderName(result.provider)}</td>
+                      <td className="score-cell">
+                        <span className={`score ${getScoreClass(result.avg_score || 0)}`}>
+                          {((result.avg_score || 0) * 100).toFixed(1)}%
+                        </span>
+                      </td>
+                      <td>{result.total_samples}</td>
+                      <td>
+                        <span className={`status-badge ${result.status === 'completed' ? 'active' : 'inactive'}`}>
+                          {result.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Comparison History */}
-      <div className="table-container" style={{ marginTop: '16px' }}>
-        <div className="history-table">
-          <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h3>Comparison History</h3>
-            <button className="btn btn-sm btn-primary" onClick={() => setShowHistoryModal(true)}>View Details</button>
+      <div className="history-container">
+        <div className="history-header">
+          <h3>Comparison History</h3>
+          <button className="btn btn-sm btn-primary" onClick={() => setShowHistoryModal(true)}>View Details</button>
+        </div>
+        {comparisonHistory.length === 0 ? (
+          <div className="empty-state">
+            <h4>No comparison history yet</h4>
+            <p>Run a comparison to see results here.</p>
           </div>
-          {comparisonHistory.length === 0 ? (
-            <div className="empty-state" style={{ marginTop: '12px' }}>
-              <h3>No comparison history yet</h3>
-              <p>Run a comparison to see results here.</p>
-            </div>
-          ) : (
-            <table>
+        ) : (
+          <div className="history-table-container">
+            <table className="history-table">
               <thead>
                 <tr>
                   <th>Date</th>
@@ -413,8 +560,8 @@ function CompareModels() {
                   <tr key={comparison.id}>
                     <td>{new Date(comparison.created_at).toLocaleDateString()}</td>
                     <td>{comparison.models.length}</td>
-                    <td>
-                      <span className="score-badge">
+                    <td className="score-cell">
+                      <span className="score">
                         {(() => {
                           const scores = (comparison.results || []).map(r => (typeof r.avg_score === 'number' ? r.avg_score : 0))
                           return (scores.length ? Math.max(...scores) : 0).toFixed(3)
@@ -425,8 +572,8 @@ function CompareModels() {
                 ))}
               </tbody>
             </table>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* History Modal */}
@@ -439,21 +586,14 @@ function CompareModels() {
             </div>
             <div className="modal-body">
               {comparisonHistory.map((comparison) => (
-                <div key={comparison.id} className="table-container" style={{ marginBottom: '16px' }}>
-                  <h4 style={{ marginBottom: '8px' }}>Template Comparison • {new Date(comparison.created_at).toLocaleString()}</h4>
+                <div key={comparison.id} className="history-item">
+                  <h4>Template Comparison • {new Date(comparison.created_at).toLocaleString()}</h4>
                   {comparison.prompt_template && (
-                    <div style={{
-                      background: '#f8f9fa',
-                      padding: '10px',
-                      borderRadius: '4px',
-                      fontFamily: 'monospace',
-                      whiteSpace: 'pre-wrap',
-                      wordBreak: 'break-word'
-                    }}>
+                    <div className="template-preview">
                       {comparison.prompt_template.substring(0, 200)}{comparison.prompt_template.length > 200 ? '…' : ''}
                     </div>
                   )}
-                  <div className="history-table" style={{ marginTop: '12px' }}>
+                  <div className="history-results-table">
                     <table>
                       <thead>
                         <tr>
@@ -466,9 +606,9 @@ function CompareModels() {
                         {comparison.results.map((result, index) => (
                           <tr key={index}>
                             <td>{formatModelName(result.model)}</td>
-                            <td>
-                              <span className={`score-badge ${getScoreClass(result.avg_score || 0)}`}>
-                                {(typeof result.avg_score === 'number' ? result.avg_score : 0).toFixed(3)}
+                            <td className="score-cell">
+                              <span className={`score ${getScoreClass(result.avg_score || 0)}`}>
+                                {((result.avg_score || 0) * 100).toFixed(1)}%
                               </span>
                             </td>
                             <td>{result.total_samples}</td>
