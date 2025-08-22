@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
-import './SelfHealingOptimization.css'
+import './PromptOptimizer.css'
 
-function SelfHealingOptimization() {
+function PromptOptimizer() {
   const [promptSystems, setPromptSystems] = useState([])
   const [selectedSystem, setSelectedSystem] = useState('')
   const [optimizationConfig, setOptimizationConfig] = useState({
@@ -41,7 +41,7 @@ function SelfHealingOptimization() {
     setOptimizationResults([])
 
     try {
-      const response = await fetch('/api/self-healing-optimization/start', {
+      const response = await fetch('/api/prompt-optimizer/start', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ function SelfHealingOptimization() {
   const pollOptimizationResults = async (optimizationId) => {
     const pollInterval = setInterval(async () => {
       try {
-        const response = await fetch(`/api/self-healing-optimization/${optimizationId}/status`)
+        const response = await fetch(`/api/prompt-optimizer/${optimizationId}/status`)
         const data = await response.json()
 
         setCurrentIteration(data.currentIteration)
@@ -90,7 +90,7 @@ function SelfHealingOptimization() {
 
   const stopOptimization = async () => {
     try {
-      await fetch('/api/self-healing-optimization/stop', {
+      await fetch('/api/prompt-optimizer/stop', {
         method: 'POST'
       })
       setIsOptimizing(false)
@@ -100,11 +100,7 @@ function SelfHealingOptimization() {
   }
 
   return (
-    <div className="self-healing-optimization">
-      <div className="optimization-header">
-        <h2>Self-Healing Prompt Optimization</h2>
-        <p>Use AI to automatically improve your prompts and re-evaluate for better results</p>
-      </div>
+    <div className="prompt-optimizer">
 
       <div className="optimization-container">
         <div className="optimization-setup">
@@ -206,9 +202,21 @@ function SelfHealingOptimization() {
               <button 
                 className="btn btn-primary"
                 onClick={startOptimization}
-                disabled={!selectedSystem}
+                disabled={true}
+                style={{
+                  background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  boxShadow: '0 2px 8px rgba(255,126,95,0.15)',
+                  fontWeight: 600,
+                  fontSize: '1.1rem',
+                  padding: '0.7rem 2.2rem',
+                  borderRadius: '0.5rem',
+                  transition: 'background 0.2s',
+                  cursor: 'pointer'
+                }}
               >
-                Start Optimization
+                Optimize Prompt
               </button>
             ) : (
               <button 
@@ -245,8 +253,13 @@ function SelfHealingOptimization() {
 
           {optimizationResults.length > 0 && (
             <div className="optimization-results">
-              <h4>Best Prompts Found</h4>
-              <div className="results-list">
+              <div
+                className="results-list"
+                style={{
+                  maxHeight: "500px",
+                  overflowY: "auto"
+                }}
+              >
                 {optimizationResults.slice(0, 5).map((result, index) => (
                   <div key={index} className="result-item">
                     <div className="result-header">
@@ -256,9 +269,6 @@ function SelfHealingOptimization() {
                     <div className="result-prompt">
                       <strong>Prompt:</strong>
                       <pre>{result.prompt}</pre>
-                    </div>
-                    <div className="result-improvement">
-                      <span>Improvement: {result.improvement > 0 ? '+' : ''}{result.improvement.toFixed(3)}</span>
                     </div>
                   </div>
                 ))}
@@ -271,4 +281,4 @@ function SelfHealingOptimization() {
   )
 }
 
-export default SelfHealingOptimization
+export default PromptOptimizer

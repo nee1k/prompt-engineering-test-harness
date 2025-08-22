@@ -397,7 +397,7 @@ function PromptSystemsList() {
         <button
           className="btn btn-large"
           style={{
-            background: 'linear-gradient(90deg, #4f8cff 0%, #38d9a9 100%)',
+            background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
             color: '#fff',
             border: 'none',
             boxShadow: '0 2px 8px rgba(79,140,255,0.15)',
@@ -416,7 +416,7 @@ function PromptSystemsList() {
         <button
           className="btn btn-large"
           style={{
-            background: 'linear-gradient(90deg, #ff7e5f 0%, #feb47b 100%)',
+            background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
             color: '#fff',
             border: 'none',
             boxShadow: '0 2px 8px rgba(255,126,95,0.15)',
