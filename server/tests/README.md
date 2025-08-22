@@ -2,6 +2,35 @@
 
 This directory contains comprehensive tests for the Prompt Engineering Test Harness API.
 
+## Setup
+
+### 1. Create and Activate Virtual Environment
+
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+# venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 2. Verify Setup
+
+```bash
+# Check that virtual environment is active
+which python
+# Should show: /path/to/project/server/venv/bin/python
+
+# Run a simple test
+python -m pytest tests/test_simple.py -v
+```
+
 ## Test Structure
 
 - `conftest.py` - Test configuration and fixtures
@@ -31,38 +60,44 @@ This directory contains comprehensive tests for the Prompt Engineering Test Harn
 
 ### Quick Start
 ```bash
-# From the server directory
+# Make sure virtual environment is activated
+source venv/bin/activate
+
+# Run all tests
+python -m pytest tests/ -v
+
+# Or use the test runner script
 python run_tests.py
 ```
 
 ### Using pytest directly
 ```bash
 # Run all tests
-pytest
+python -m pytest
 
 # Run with verbose output
-pytest -v
+python -m pytest -v
 
 # Run specific test file
-pytest tests/test_prompt_systems.py
+python -m pytest tests/test_prompt_systems.py
 
 # Run specific test
-pytest tests/test_prompt_systems.py::test_create_prompt_system
+python -m pytest tests/test_prompt_systems.py::test_create_prompt_system
 
 # Run tests matching pattern
-pytest -k "prompt"
+python -m pytest -k "prompt"
 ```
 
 ### Test Categories
 ```bash
 # Run only unit tests
-pytest -m unit
+python -m pytest -m unit
 
 # Run only integration tests
-pytest -m integration
+python -m pytest -m integration
 
 # Skip slow tests
-pytest -m "not slow"
+python -m pytest -m "not slow"
 ```
 
 ## Test Data
@@ -96,3 +131,10 @@ def test_feature_error_handling(client, test_db):
     # Make API call
     # Assert error response
 ```
+
+## Important Notes
+
+- **Always activate the virtual environment** before running tests
+- The virtual environment is excluded from git (see `.gitignore`)
+- All external dependencies are mocked to ensure fast, reliable tests
+- Tests use in-memory SQLite database for isolation
