@@ -938,17 +938,22 @@ def generate_improvement_prompt(original_prompt: str, test_results: List[TestRes
 async def get_improved_prompt(improvement_prompt: str) -> str:
     """Get an improved prompt from the LLM"""
     try:
-        response = openai_client.chat.completions.create(
+        # Use the improved call_openai function for better error handling
+        system_message = "You are an expert prompt engineer. Provide clear, specific, and effective prompt improvements."
+        full_prompt = f"{system_message}\n\n{improvement_prompt}"
+        
+        return await call_openai(
+            prompt=full_prompt,
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "You are an expert prompt engineer. Provide clear, specific, and effective prompt improvements."},
-                {"role": "user", "content": improvement_prompt}
-            ],
             temperature=0.7,
-            max_tokens=500
+            max_tokens=500,
+            top_p=1.0
         )
-        return response.choices[0].message.content.strip()
+    except HTTPException as e:
+        print(f"Error getting improved prompt: {e.detail}")
+        return ""
     except Exception as e:
+        print(f"Error getting improved prompt: {str(e)}")
         return ""
 
 async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem, regression_set: List[Dict], evaluation_method: str) -> float:
@@ -963,15 +968,16 @@ async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem
                 if key != "expected_output":
                     formatted_prompt = formatted_prompt.replace(f"{{{key}}}", str(value))
             
-            # Call the LLM
-            response = openai_client.chat.completions.create(
+            # Call the LLM using the improved call_openai function
+            predicted_output = await call_llm(
+                prompt=formatted_prompt,
+                provider=prompt_system.provider,
                 model=prompt_system.model,
-                messages=[{"role": "user", "content": formatted_prompt}],
                 temperature=prompt_system.temperature,
-                max_tokens=prompt_system.max_tokens
+                max_tokens=prompt_system.max_tokens,
+                top_p=prompt_system.top_p,
+                top_k=prompt_system.top_k
             )
-            
-            predicted_output = response.choices[0].message.content.strip()
             
             # Evaluate the result
             score = evaluate_output(predicted_output, test_case["expected_output"], evaluation_method)
@@ -980,7 +986,11 @@ async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem
         avg_score = sum(scores) / len(scores) if scores else 0.0
         return avg_score
         
+    except HTTPException as e:
+        print(f"Error testing improved prompt: {e.detail}")
+        return 0.0
     except Exception as e:
+        print(f"Error testing improved prompt: {str(e)}")
         return 0.0
 
 @app.get("/prompt-optimizer/{optimization_id}/status")
