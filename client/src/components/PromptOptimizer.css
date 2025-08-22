@@ -2,6 +2,7 @@
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
+  font-family: inherit;
 }
 
 .optimization-header {
@@ -15,13 +16,16 @@
 
 .optimization-header h2 {
   margin: 0 0 10px 0;
-  font-size: 2.2em;
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
 }
 
 .optimization-header p {
   margin: 0;
-  font-size: 1.1em;
+  font-size: var(--font-size-lg);
   opacity: 0.9;
+  line-height: var(--line-height-normal);
 }
 
 .optimization-container {
@@ -40,7 +44,8 @@
 .optimization-setup h3 {
   margin: 0 0 20px 0;
   color: #333;
-  font-size: 1.5em;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
 }
 
 .form-group {
@@ -50,8 +55,9 @@
 .form-group label {
   display: block;
   margin-bottom: 8px;
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: #555;
+  font-size: var(--font-size-base);
 }
 
 .form-group select,
@@ -60,7 +66,7 @@
   padding: 12px;
   border: 2px solid #e1e5e9;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: var(--font-size-base);
   transition: border-color 0.3s ease;
 }
 
@@ -73,7 +79,7 @@
 .form-group small {
   display: block;
   margin-top: 5px;
-  font-size: 0.85em;
+  font-size: var(--font-size-sm);
   color: #666;
   font-style: italic;
 }
@@ -87,7 +93,8 @@
 .budget-controls h4 {
   margin: 0 0 15px 0;
   color: #333;
-  font-size: 1.2em;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   border-bottom: 2px solid #f0f0f0;
   padding-bottom: 8px;
 }
@@ -108,8 +115,8 @@
   padding: 12px 30px;
   border: none;
   border-radius: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 150px;
@@ -154,7 +161,8 @@
 .optimization-progress h3 {
   margin: 0 0 20px 0;
   color: #333;
-  font-size: 1.5em;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
 }
 
 .progress-info {
@@ -168,7 +176,7 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
 }
 
 .progress-item:last-child {
@@ -196,7 +204,8 @@
 .optimization-results h4 {
   margin: 0 0 15px 0;
   color: #333;
-  font-size: 1.2em;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
 }
 
 .results-list {
@@ -221,14 +230,14 @@
 }
 
 .result-score {
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: #667eea;
-  font-size: 1.1em;
+  font-size: var(--font-size-lg);
 }
 
 .result-iteration {
   color: #666;
-  font-size: 0.9em;
+  font-size: var(--font-size-sm);
   background: #e9ecef;
   padding: 4px 8px;
   border-radius: 4px;
@@ -242,12 +251,12 @@
   background: white;
   padding: 12px;
   border-radius: 6px;
-  font-size: 0.9em;
+  font-size: var(--font-size-sm);
   white-space: pre-wrap;
   word-break: break-word;
   margin: 8px 0 0 0;
   border: 1px solid #e1e5e9;
-  line-height: 1.4;
+  line-height: var(--line-height-normal);
 }
 
 /* Responsive design */
@@ -263,6 +272,6 @@
   }
   
   .optimization-header h2 {
-    font-size: 1.8em;
+    font-size: var(--font-size-2xl);
   }
 }

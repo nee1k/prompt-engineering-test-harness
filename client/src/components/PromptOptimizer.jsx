@@ -123,8 +123,6 @@ function PromptOptimizer() {
           </div>
 
           <div className="optimization-params">
-            <h4>Optimization Settings</h4>
-            
             <div className="params-grid">
               <div className="form-group">
                 <label>Max Iterations:</label>
@@ -139,7 +137,6 @@ function PromptOptimizer() {
                   })}
                   disabled={isOptimizing}
                 />
-                <small>How many times to try improving the prompt</small>
               </div>
 
               <div className="form-group">
@@ -157,14 +154,12 @@ function PromptOptimizer() {
                   <option value="semantic">Semantic Similarity</option>
                   <option value="contains">Contains</option>
                 </select>
-                <small>How to compare AI outputs with expected results</small>
               </div>
             </div>
           </div>
 
           <div className="budget-controls">
-            <h4>Budget Controls</h4>
-            
+
             <div className="budget-grid">
               <div className="form-group">
                 <label>Cost Budget ($):</label>
@@ -202,19 +197,8 @@ function PromptOptimizer() {
               <button 
                 className="btn btn-primary"
                 onClick={startOptimization}
-                disabled={true}
-                style={{
-                  background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
-                  color: '#fff',
-                  border: 'none',
-                  boxShadow: '0 2px 8px rgba(255,126,95,0.15)',
-                  fontWeight: 600,
-                  fontSize: '1.1rem',
-                  padding: '0.7rem 2.2rem',
-                  borderRadius: '0.5rem',
-                  transition: 'background 0.2s',
-                  cursor: 'pointer'
-                }}
+                disabled={!selectedSystem}
+
               >
                 Optimize Prompt
               </button>
