@@ -1,6 +1,5 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import json
@@ -107,19 +106,12 @@ async def call_ollama(prompt: str, model: str, temperature: float, max_tokens: i
 
 async def call_openai(prompt: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
     """Call OpenAI API"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    
+    if not api_key:
+        raise HTTPException(status_code=500, detail="OpenAI API key not found in environment variables")
+    
     try:
-        # Debug: Check if API key is set
-        api_key = os.getenv("OPENAI_API_KEY")
-        print(f"API Key present: {bool(api_key)}")
-        print(f"API Key length: {len(api_key) if api_key else 0}")
-        print(f"API Key prefix: {api_key[:10] if api_key else 'None'}...")
-        
-        if not api_key:
-            raise HTTPException(status_code=500, detail="OpenAI API key not found in environment variables")
-        
-        print(f"Calling OpenAI API with model: {model}")
-        print(f"Prompt length: {len(prompt)}")
-        
         response = openai_client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
@@ -127,13 +119,8 @@ async def call_openai(prompt: str, model: str, temperature: float, max_tokens: i
             max_tokens=max_tokens,
             top_p=top_p
         )
-        print(f"OpenAI API call successful")
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"OpenAI API error details: {str(e)}")
-        print(f"Error type: {type(e)}")
-        import traceback
-        print(f"Full traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail=f"OpenAI API error: {str(e)}")
 
 async def call_llm(prompt: str, provider: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
@@ -165,8 +152,8 @@ async def get_available_models():
                     for model in models_data.get("models", [])
                 ]
     except Exception as e:
-        print(f"Error fetching Ollama models: {e}")
         # Fallback to empty list if Ollama is not available
+        pass
     
     return {
         "openai": [
@@ -372,7 +359,6 @@ async def create_test_run(test_run: TestRunCreate):
     except Exception as e:
         # Rollback any database changes if an error occurs
         db.rollback()
-        print(f"Test run failed, rolling back database changes: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Test run failed: {str(e)}")
     finally:
         db.close()
@@ -611,7 +597,7 @@ async def create_model_comparison(comparison: ModelComparisonCreate):
                     "total_samples": 0,
                     "status": "failed"
                 })
-                print(f"Error testing model {model_id}: {e}")
+
         
         db.commit()
         return {"id": comparison_id, "results": results}
@@ -729,7 +715,6 @@ async def start_prompt_optimization(request: PromptOptimizerCreate):
         }
         
         # Start optimization in background
-        print(f"Starting optimization task for ID: {optimization_id}")
         asyncio.create_task(run_optimization(optimization_id))
         
         return {"optimizationId": optimization_id, "status": "started"}
@@ -739,20 +724,17 @@ async def start_prompt_optimization(request: PromptOptimizerCreate):
 
 async def run_optimization(optimization_id: str):
     """Run the optimization process"""
-    print(f"Starting optimization process for ID: {optimization_id}")
     session = optimization_sessions[optimization_id]
     db = SessionLocal()
     
     try:
         prompt_system = db.query(PromptSystem).filter(PromptSystem.id == session["prompt_system_id"]).first()
-        print(f"Found prompt system: {prompt_system.name if prompt_system else 'None'}")
         
         for iteration in range(session["config"]["maxIterations"]):
             if session["status"] != "running":
                 break
                 
             session["current_iteration"] = iteration + 1
-            print(f"Iteration {iteration + 1} for optimization {optimization_id}")
             
             # Get the latest test run for regression set
             latest_test_run = db.query(TestRun).filter(
@@ -760,12 +742,10 @@ async def run_optimization(optimization_id: str):
             ).order_by(TestRun.created_at.desc()).first()
             
             if not latest_test_run:
-                print(f"No test run found for prompt system {session['prompt_system_id']}")
                 break
                 
             # Get test results for analysis
             test_results = db.query(TestResult).filter(TestResult.test_run_id == latest_test_run.id).all()
-            print(f"Found {len(test_results)} test results")
             
             # Reconstruct regression set from test results
             regression_set = []
@@ -776,8 +756,6 @@ async def run_optimization(optimization_id: str):
                     "expected_output": result.expected_output
                 })
             
-            print(f"Reconstructed regression set with {len(regression_set)} items")
-            
             # Analyze failures and generate improvement prompt
             improvement_prompt = generate_improvement_prompt(
                 prompt_system.template,
@@ -787,7 +765,6 @@ async def run_optimization(optimization_id: str):
             
             # Get improved prompt from LLM
             improved_prompt = await get_improved_prompt(improvement_prompt)
-            print(f"Generated improved prompt: {improved_prompt[:100]}...")
             
             # Test the improved prompt
             test_score = await test_improved_prompt(
@@ -824,12 +801,10 @@ async def run_optimization(optimization_id: str):
             await asyncio.sleep(2)
         
         session["status"] = "completed"
-        print(f"Optimization {optimization_id} completed successfully")
         
     except Exception as e:
         session["status"] = "failed"
         session["error"] = str(e)
-        print(f"Optimization {optimization_id} failed with error: {e}")
     finally:
         db.close()
 
@@ -883,13 +858,11 @@ async def get_improved_prompt(improvement_prompt: str) -> str:
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        print(f"Error getting improved prompt: {e}")
         return ""
 
 async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem, regression_set: List[Dict], evaluation_method: str) -> float:
     """Test the improved prompt and return the average score"""
     try:
-        print(f"Testing improved prompt with {len(regression_set)} test cases")
         scores = []
         
         for test_case in regression_set[:10]:  # Test with first 10 cases for speed
@@ -914,11 +887,9 @@ async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem
             scores.append(score)
         
         avg_score = sum(scores) / len(scores) if scores else 0.0
-        print(f"Average test score: {avg_score}")
         return avg_score
         
     except Exception as e:
-        print(f"Error testing improved prompt: {e}")
         return 0.0
 
 @app.get("/prompt-optimizer/{optimization_id}/status")
@@ -953,41 +924,36 @@ async def startup_event():
     try:
         from migrate import run_migration
         run_migration()
-        print("Database migration completed")
     except Exception as e:
-        print(f"Migration error: {e}")
+        pass
     
     # Run evaluation function migration
     try:
         from migrate_evaluation_function import migrate_evaluation_function
         migrate_evaluation_function()
-        print("Evaluation function migration completed")
     except Exception as e:
-        print(f"Evaluation function migration error: {e}")
+        pass
     
     # Run email notification migration
     try:
         from migrate_email_notifications import migrate_email_notifications
         migrate_email_notifications()
-        print("Email notification migration completed")
     except Exception as e:
-        print(f"Email notification migration error: {e}")
+        pass
     
     # Run model comparison migration
     try:
         from migrate_model_comparison import run_migration
         run_migration()
-        print("Model comparison migration completed")
     except Exception as e:
-        print(f"Model comparison migration error: {e}")
+        pass
     
     # Run model comparison v2 migration
     try:
         from migrate_model_comparison_v2 import run_migration
         run_migration()
-        print("Model comparison v2 migration completed")
     except Exception as e:
-        print(f"Model comparison v2 migration error: {e}")
+        pass
     
     # Load existing schedules
     await scheduler.load_existing_schedules()

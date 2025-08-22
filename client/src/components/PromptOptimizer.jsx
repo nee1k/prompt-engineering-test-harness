@@ -54,7 +54,6 @@ function PromptOptimizer() {
 
       if (response.ok) {
         const result = await response.json()
-        console.log('Optimization started:', result)
         // Start polling for results
         pollOptimizationResults(result.optimizationId)
       } else {
