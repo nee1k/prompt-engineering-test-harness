@@ -257,3 +257,28 @@
   line-height: 1.4;
   font-weight: var(--font-weight-medium);
 }
+
+/* API Key Error Banner */
+.api-key-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%);
+  border: 2px solid #ef4444;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1);
+}
+
+.api-key-error-banner .error-icon {
+  font-size: 24px;
+  color: #dc2626;
+}
+
+.api-key-error-banner .error-text {
+  color: #dc2626;
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+  font-weight: var(--font-weight-medium);
+}

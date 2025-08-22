@@ -14,6 +14,7 @@ function PromptOptimizer() {
   const [optimizationResults, setOptimizationResults] = useState([])
   const [currentIteration, setCurrentIteration] = useState(0)
   const [totalCost, setTotalCost] = useState(0.0)
+  const [apiKeyError, setApiKeyError] = useState(false)
 
   useEffect(() => {
     fetchPromptSystems()
@@ -39,6 +40,7 @@ function PromptOptimizer() {
     setCurrentIteration(0)
     setTotalCost(0.0)
     setOptimizationResults([])
+    setApiKeyError(false)
 
     try {
       const response = await fetch('/api/prompt-optimizer/start', {
@@ -74,6 +76,25 @@ function PromptOptimizer() {
         setCurrentIteration(data.currentIteration)
         setTotalCost(data.totalCost)
         setOptimizationResults(data.results || [])
+
+        // Check for API key errors in the results
+        if (data.results && data.results.length > 0) {
+          console.log('Checking results for API key errors:', data.results)
+          const hasApiKeyError = data.results.some(result => 
+            result.error && result.error.includes('Invalid OpenAI API key')
+          )
+          
+          console.log('Has API key error:', hasApiKeyError)
+          
+          if (hasApiKeyError) {
+            console.error('OpenAI API key error detected. Stopping optimization.')
+            setIsOptimizing(false)
+            setApiKeyError(true)
+            clearInterval(pollInterval)
+            alert('❌ OpenAI API Key Error!\n\nYour OpenAI API key is invalid or missing. Please check your API key configuration in the backend.\n\nOptimization has been stopped.')
+            return
+          }
+        }
 
         if (data.status === 'completed' || data.status === 'failed') {
           setIsOptimizing(false)
@@ -196,10 +217,10 @@ function PromptOptimizer() {
               <button 
                 className="btn btn-primary"
                 onClick={startOptimization}
-                disabled={!selectedSystem}
+                disabled={!selectedSystem || apiKeyError}
 
-              >
-                Optimize Prompt
+                              >
+                {apiKeyError ? 'Fix API Key First' : 'Optimize Prompt'}
               </button>
             ) : (
               <button 
@@ -214,6 +235,16 @@ function PromptOptimizer() {
 
         <div className="optimization-progress">
           <h3>Optimization Progress</h3>
+          
+          {apiKeyError && (
+            <div className="api-key-error-banner">
+              <span className="error-icon">🔑</span>
+              <span className="error-text">
+                <strong>OpenAI API Key Error:</strong> Your API key is invalid or missing. 
+                Please check your backend configuration and restart the optimization.
+              </span>
+            </div>
+          )}
           
           {isOptimizing && (
             <div className="progress-info">
