@@ -9,6 +9,7 @@ from openai import OpenAI
 import os
 import httpx
 import asyncio
+import redis
 from dotenv import load_dotenv
 from database import engine, SessionLocal
 from models import Base, PromptSystem, TestRun, TestResult, TestSchedule, ModelComparison, ModelComparisonResult
@@ -21,6 +22,10 @@ load_dotenv()
 
 # Initialize OpenAI client
 openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+# Initialize Redis client
+redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis_client = redis.from_url(redis_url, decode_responses=True)
 
 app = FastAPI(title="Prompt Engineering Test Harness")
 
@@ -135,6 +140,15 @@ async def call_llm(prompt: str, provider: str, model: str, temperature: float, m
 @app.get("/")
 async def root():
     return {"message": "Prompt Engineering Test Harness API"}
+
+@app.get("/health/redis/")
+async def redis_health_check():
+    """Check Redis connection health"""
+    try:
+        redis_client.ping()
+        return {"status": "healthy", "redis": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "redis": "disconnected", "error": str(e)}
 
 @app.get("/models/")
 async def get_available_models():
@@ -677,8 +691,62 @@ class PromptOptimizerCreate(BaseModel):
     promptSystemId: str
     config: Dict[str, Any]
 
-# Store optimization sessions in memory (in production, use Redis or database)
-optimization_sessions = {}
+# Redis-based optimization sessions storage
+OPTIMIZATION_SESSION_PREFIX = "optimization_session:"
+
+def get_optimization_session(optimization_id: str) -> Dict[str, Any]:
+    """Get optimization session from Redis"""
+    try:
+        session_data = redis_client.get(f"{OPTIMIZATION_SESSION_PREFIX}{optimization_id}")
+        return json.loads(session_data) if session_data else None
+    except Exception as e:
+        print(f"Error getting optimization session from Redis: {e}")
+        return None
+
+def set_optimization_session(optimization_id: str, session_data: Dict[str, Any]) -> bool:
+    """Set optimization session in Redis"""
+    try:
+        # Store with 24-hour expiration
+        redis_client.setex(
+            f"{OPTIMIZATION_SESSION_PREFIX}{optimization_id}",
+            86400,  # 24 hours
+            json.dumps(session_data, default=str)
+        )
+        return True
+    except Exception as e:
+        print(f"Error setting optimization session in Redis: {e}")
+        return False
+
+def delete_optimization_session(optimization_id: str) -> bool:
+    """Delete optimization session from Redis"""
+    try:
+        redis_client.delete(f"{OPTIMIZATION_SESSION_PREFIX}{optimization_id}")
+        return True
+    except Exception as e:
+        print(f"Error deleting optimization session from Redis: {e}")
+        return False
+
+def cleanup_old_sessions():
+    """Clean up completed/failed sessions older than 24 hours"""
+    try:
+        session_keys = redis_client.keys(f"{OPTIMIZATION_SESSION_PREFIX}*")
+        cleaned_count = 0
+        
+        for key in session_keys:
+            optimization_id = key.replace(OPTIMIZATION_SESSION_PREFIX, "")
+            session = get_optimization_session(optimization_id)
+            if session:
+                # Check if session is completed/failed and older than 24 hours
+                if session["status"] in ["completed", "failed"]:
+                    start_time = datetime.fromisoformat(session["start_time"])
+                    if (datetime.utcnow() - start_time).total_seconds() > 86400:  # 24 hours
+                        delete_optimization_session(optimization_id)
+                        cleaned_count += 1
+        
+        if cleaned_count > 0:
+            print(f"Cleaned up {cleaned_count} old optimization sessions")
+    except Exception as e:
+        print(f"Error cleaning up old sessions: {e}")
 
 @app.post("/prompt-optimizer/start")
 async def start_prompt_optimization(request: PromptOptimizerCreate):
@@ -701,7 +769,7 @@ async def start_prompt_optimization(request: PromptOptimizerCreate):
             raise HTTPException(status_code=400, detail="No test runs found for this prompt system")
         
         # Initialize optimization session
-        optimization_sessions[optimization_id] = {
+        session_data = {
             "status": "running",
             "prompt_system_id": request.promptSystemId,
             "config": request.config,
@@ -711,8 +779,11 @@ async def start_prompt_optimization(request: PromptOptimizerCreate):
             "best_score": latest_test_run.avg_score,
             "best_prompt": prompt_system.template,
             "results": [],
-            "start_time": datetime.utcnow()
+            "start_time": datetime.utcnow().isoformat()
         }
+        
+        if not set_optimization_session(optimization_id, session_data):
+            raise HTTPException(status_code=500, detail="Failed to initialize optimization session")
         
         # Start optimization in background
         asyncio.create_task(run_optimization(optimization_id))
@@ -724,7 +795,11 @@ async def start_prompt_optimization(request: PromptOptimizerCreate):
 
 async def run_optimization(optimization_id: str):
     """Run the optimization process"""
-    session = optimization_sessions[optimization_id]
+    session = get_optimization_session(optimization_id)
+    if not session:
+        print(f"Optimization session {optimization_id} not found")
+        return
+    
     db = SessionLocal()
     
     try:
@@ -735,6 +810,7 @@ async def run_optimization(optimization_id: str):
                 break
                 
             session["current_iteration"] = iteration + 1
+            set_optimization_session(optimization_id, session)
             
             # Get the latest test run for regression set
             latest_test_run = db.query(TestRun).filter(
@@ -793,6 +869,9 @@ async def run_optimization(optimization_id: str):
                 session["best_score"] = test_score
                 session["best_prompt"] = improved_prompt
             
+            # Save updated session to Redis
+            set_optimization_session(optimization_id, session)
+            
             # Check budget limits
             if session["total_cost"] >= session["config"]["costBudget"]:
                 break
@@ -801,10 +880,12 @@ async def run_optimization(optimization_id: str):
             await asyncio.sleep(2)
         
         session["status"] = "completed"
+        set_optimization_session(optimization_id, session)
         
     except Exception as e:
         session["status"] = "failed"
         session["error"] = str(e)
+        set_optimization_session(optimization_id, session)
     finally:
         db.close()
 
@@ -895,10 +976,10 @@ async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem
 @app.get("/prompt-optimizer/{optimization_id}/status")
 async def get_optimization_status(optimization_id: str):
     """Get the status of an optimization session"""
-    if optimization_id not in optimization_sessions:
+    session = get_optimization_session(optimization_id)
+    if not session:
         raise HTTPException(status_code=404, detail="Optimization session not found")
     
-    session = optimization_sessions[optimization_id]
     return {
         "status": session["status"],
         "currentIteration": session["current_iteration"],
@@ -911,15 +992,77 @@ async def get_optimization_status(optimization_id: str):
 @app.post("/prompt-optimizer/stop")
 async def stop_optimization():
     """Stop all running optimizations"""
-    for session in optimization_sessions.values():
-        if session["status"] == "running":
-            session["status"] = "stopped"
-    
-    return {"status": "stopped"}
+    try:
+        # Get all optimization session keys
+        session_keys = redis_client.keys(f"{OPTIMIZATION_SESSION_PREFIX}*")
+        stopped_count = 0
+        
+        for key in session_keys:
+            optimization_id = key.replace(OPTIMIZATION_SESSION_PREFIX, "")
+            session = get_optimization_session(optimization_id)
+            if session and session["status"] == "running":
+                session["status"] = "stopped"
+                set_optimization_session(optimization_id, session)
+                stopped_count += 1
+        
+        return {"status": "stopped", "stopped_sessions": stopped_count}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error stopping optimizations: {str(e)}")
+
+@app.get("/prompt-optimizer/sessions/")
+async def list_optimization_sessions():
+    """List all optimization sessions"""
+    try:
+        session_keys = redis_client.keys(f"{OPTIMIZATION_SESSION_PREFIX}*")
+        sessions = []
+        
+        for key in session_keys:
+            optimization_id = key.replace(OPTIMIZATION_SESSION_PREFIX, "")
+            session = get_optimization_session(optimization_id)
+            if session:
+                sessions.append({
+                    "id": optimization_id,
+                    "status": session["status"],
+                    "prompt_system_id": session["prompt_system_id"],
+                    "current_iteration": session["current_iteration"],
+                    "total_cost": session["total_cost"],
+                    "best_score": session["best_score"],
+                    "start_time": session["start_time"]
+                })
+        
+        return {"sessions": sessions}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error listing optimization sessions: {str(e)}")
+
+@app.delete("/prompt-optimizer/{optimization_id}/")
+async def delete_optimization_session_endpoint(optimization_id: str):
+    """Delete a specific optimization session"""
+    try:
+        session = get_optimization_session(optimization_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Optimization session not found")
+        
+        if delete_optimization_session(optimization_id):
+            return {"status": "deleted", "message": f"Optimization session {optimization_id} deleted"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to delete optimization session")
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error deleting optimization session: {str(e)}")
 
 # Initialize scheduler on startup
 @app.on_event("startup")
 async def startup_event():
+    # Test Redis connection
+    try:
+        redis_client.ping()
+        print("✓ Redis connection established")
+        # Clean up old sessions on startup
+        cleanup_old_sessions()
+    except Exception as e:
+        print(f"⚠ Redis connection failed: {e}")
+        print("Optimization sessions will not persist across restarts")
     # Run database migrations
     try:
         from migrate import run_migration
