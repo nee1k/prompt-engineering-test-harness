@@ -59,14 +59,13 @@ FROM_EMAIL=your_email@gmail.com
 Translate the following text to {language}: {text}
 ```
 
-**Test Data (CSV):**
+**Regression Data (CSV):**
 ```csv
 text,language,expected_output
 "Hello world","French","Bonjour le monde"
 "Good morning","Spanish","Buenos días"
 ```
-
-**Result:** Get scores comparing AI outputs with expected translations
+Sample regression data can be found in `examples/regression_set.csv`.
 
 ## Evaluation Methods
 
