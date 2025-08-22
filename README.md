@@ -1,82 +1,81 @@
 # Prompt Engineering Test Harness
 
-A testing framework for LLM prompt systems with automated evaluation, scheduling, and AI-powered prompt optimization.
+[![Tests](https://github.com/nee1k/prompt-engineering-test-harness/workflows/Run%20Tests/badge.svg)](https://github.com/nee1k/prompt-engineering-test-harness/actions)
+
+A comprehensive testing framework for prompt engineering systems with automated evaluation, optimization, and monitoring capabilities.
+
+## Features
+
+- **Automated Test Runs**: Execute prompt systems against regression datasets
+- **LLM Integration**: Support for OpenAI and Ollama providers
+- **Prompt Optimization**: AI-powered prompt improvement suggestions
+- **Evaluation Metrics**: Multiple evaluation functions (fuzzy, exact, semantic, contains)
+- **Real-time Monitoring**: Live optimization progress tracking
+- **Comprehensive Testing**: Full test suite with mocked dependencies
 
 ## Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
-- OpenAI API key
 
-### Installation & Running
+- Python 3.9+
+- Docker and Docker Compose (for full stack)
+- OpenAI API key (optional, for OpenAI integration)
 
-1. **Clone and setup:**
+### Setup
+
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/nee1k/prompt-systems-monitor.git
-   cd prompt-systems-monitor
-   cp env.template .env
-   # Edit .env with your OpenAI API key
+   git clone https://github.com/nee1k/prompt-engineering-test-harness.git
+   cd prompt-engineering-test-harness
    ```
 
-2. **Start all services:**
+2. **Run with Docker** (recommended):
    ```bash
    docker-compose up -d
    ```
+   Access the application at: http://localhost:3000
 
-3. **Access the application:**
-   - Frontend: [http://localhost:3000](http://localhost:3000)
-   - API: [http://localhost:8000](http://localhost:8000)
-   - Nginx (proxy): [http://localhost](http://localhost)
+3. **Or run locally**:
+   ```bash
+   # Backend setup
+   cd server
+   ./setup.sh  # macOS/Linux
+   # or setup.bat  # Windows
+   
+   # Start the backend
+   source venv/bin/activate
+   python main.py
+   
+   # Frontend setup (in another terminal)
+   cd client
+   npm install
+   npm start
+   ```
 
-## Environment Variables
+## API Documentation
 
-Required in `.env`:
+Once running, visit:
+- **API Docs**: http://localhost:8000/docs
+- **Frontend**: http://localhost:3000
+
+## Testing
+
+The project includes a comprehensive test suite:
+
 ```bash
-OPENAI_API_KEY=your_openai_api_key_here
+cd server
+source venv/bin/activate
+python -m pytest tests/ -v
 ```
 
-Optional (for email notifications):
-```bash
-SMTP_SERVER=smtp.gmail.com
-SMTP_USERNAME=your_email@gmail.com
-SMTP_PASSWORD=your_app_password
-FROM_EMAIL=your_email@gmail.com
-```
+## Contributing
 
-## Features
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
 
-- **Prompt Systems**: Create and manage prompt templates with variables
-- **Test Execution**: Run tests with multiple evaluation methods
-- **Scheduled Testing**: Automate tests with configurable intervals
-- **Model Comparison**: Compare prompts across different AI models
-- **AI Prompt Optimizer**: Automatically improve prompts using LLM analysis
-- **Redis Persistence**: Optimization sessions survive server restarts
+## License
 
-## Usage Example
-
-**Prompt Template:**
-```
-Translate the following text to {language}: {text}
-```
-
-**Regression Data (CSV):**
-```csv
-text,language,expected_output
-"Hello world","French","Bonjour le monde"
-"Good morning","Spanish","Buenos días"
-```
-Sample regression data can be found in `examples/regression_set.csv`.
-
-## Evaluation Methods
-
-- `fuzzy` - String similarity (0.0-1.0)
-- `exact` - Perfect match (0.0 or 1.0)
-- `semantic` - Semantic similarity
-- `contains` - Substring matching
-
-## Tech Stack
-
-- **Backend**: FastAPI, PostgreSQL, Redis
-- **Frontend**: React 18, Vite
-- **LLM**: OpenAI, Ollama
-- **Infrastructure**: Docker, Nginx
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
