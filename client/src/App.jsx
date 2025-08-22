@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
 import CompareModels from './components/CompareModels'
+import SelfHealingOptimization from './components/SelfHealingOptimization'
 
 
 function App() {
@@ -38,12 +39,20 @@ function App() {
             Compare Models
           </Link>
 
+          <Link 
+            to="/self-healing" 
+            className={location.pathname === '/self-healing' ? 'active' : ''}
+          >
+            Self-Healing
+          </Link>
+
         </nav>
 
         <Routes>
           <Route path="/" element={<PromptSystemsList />} />
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/compare-models" element={<CompareModels />} />
+          <Route path="/self-healing" element={<SelfHealingOptimization />} />
         </Routes>
       </div>
     </div>

@@ -685,7 +685,244 @@ async def get_test_run_history(prompt_system_id: str, days: int = 7):
     finally:
         db.close()
 
+# Self-healing optimization endpoints
+class SelfHealingOptimizationCreate(BaseModel):
+    promptSystemId: str
+    config: Dict[str, Any]
 
+# Store optimization sessions in memory (in production, use Redis or database)
+optimization_sessions = {}
+
+@app.post("/self-healing-optimization/start")
+async def start_self_healing_optimization(request: SelfHealingOptimizationCreate):
+    """Start a self-healing optimization session"""
+    optimization_id = str(uuid.uuid4())
+    
+    # Get the prompt system
+    db = SessionLocal()
+    try:
+        prompt_system = db.query(PromptSystem).filter(PromptSystem.id == request.promptSystemId).first()
+        if not prompt_system:
+            raise HTTPException(status_code=404, detail="Prompt system not found")
+        
+        # Get the latest test run for baseline
+        latest_test_run = db.query(TestRun).filter(
+            TestRun.prompt_system_id == request.promptSystemId
+        ).order_by(TestRun.created_at.desc()).first()
+        
+        if not latest_test_run:
+            raise HTTPException(status_code=400, detail="No test runs found for this prompt system")
+        
+        # Initialize optimization session
+        optimization_sessions[optimization_id] = {
+            "status": "running",
+            "prompt_system_id": request.promptSystemId,
+            "config": request.config,
+            "current_iteration": 0,
+            "total_cost": 0.0,
+            "baseline_score": latest_test_run.avg_score,
+            "best_score": latest_test_run.avg_score,
+            "best_prompt": prompt_system.template,
+            "results": [],
+            "start_time": datetime.utcnow()
+        }
+        
+        # Start optimization in background
+        import asyncio
+        asyncio.create_task(run_optimization(optimization_id))
+        
+        return {"optimizationId": optimization_id, "status": "started"}
+        
+    finally:
+        db.close()
+
+async def run_optimization(optimization_id: str):
+    """Run the optimization process"""
+    session = optimization_sessions[optimization_id]
+    db = SessionLocal()
+    
+    try:
+        prompt_system = db.query(PromptSystem).filter(PromptSystem.id == session["prompt_system_id"]).first()
+        
+        for iteration in range(session["config"]["maxIterations"]):
+            if session["status"] != "running":
+                break
+                
+            session["current_iteration"] = iteration + 1
+            
+            # Get the latest test run for regression set
+            latest_test_run = db.query(TestRun).filter(
+                TestRun.prompt_system_id == session["prompt_system_id"]
+            ).order_by(TestRun.created_at.desc()).first()
+            
+            if not latest_test_run:
+                break
+                
+            # Get test results for analysis
+            test_results = db.query(TestResult).filter(TestResult.test_run_id == latest_test_run.id).all()
+            
+            # Analyze failures and generate improvement prompt
+            improvement_prompt = generate_improvement_prompt(
+                prompt_system.template,
+                test_results,
+                session["config"]["evaluationMethod"]
+            )
+            
+            # Get improved prompt from LLM
+            improved_prompt = await get_improved_prompt(improvement_prompt)
+            
+            # Test the improved prompt
+            regression_set = json.loads(latest_test_run.regression_set) if latest_test_run.regression_set else []
+            test_score = await test_improved_prompt(
+                improved_prompt,
+                prompt_system,
+                regression_set,
+                session["config"]["evaluationMethod"]
+            )
+            
+            # Update session
+            improvement = test_score - session["best_score"]
+            session["total_cost"] += 0.01  # Rough cost estimate per iteration
+            
+            result = {
+                "iteration": iteration + 1,
+                "prompt": improved_prompt,
+                "score": test_score,
+                "improvement": improvement,
+                "cost": session["total_cost"]
+            }
+            
+            session["results"].append(result)
+            
+            # Update best if improved
+            if test_score > session["best_score"]:
+                session["best_score"] = test_score
+                session["best_prompt"] = improved_prompt
+            
+            # Check budget limits
+            if session["total_cost"] >= session["config"]["costBudget"]:
+                break
+                
+            # Small delay between iterations
+            await asyncio.sleep(2)
+        
+        session["status"] = "completed"
+        
+    except Exception as e:
+        session["status"] = "failed"
+        session["error"] = str(e)
+    finally:
+        db.close()
+
+def generate_improvement_prompt(original_prompt: str, test_results: List[TestResult], evaluation_method: str):
+    """Generate a prompt to improve the original prompt based on test results"""
+    
+    # Analyze test results to find patterns in failures
+    failed_results = [r for r in test_results if r.score < 0.8]  # Consider scores below 0.8 as failures
+    
+    if not failed_results:
+        return f"""The following prompt is working well, but we want to make it even better. 
+        Please suggest a slightly improved version that might be more clear, specific, or effective:
+
+        Original prompt: {original_prompt}
+
+        Please provide an improved version that maintains the same structure but enhances clarity, specificity, or effectiveness."""
+    
+    # Analyze failure patterns
+    failure_analysis = []
+    for result in failed_results[:5]:  # Look at top 5 failures
+        input_vars = json.loads(result.input_variables) if result.input_variables else {}
+        failure_analysis.append(f"Input: {input_vars}, Expected: {result.expected_output}, Got: {result.predicted_output}, Score: {result.score}")
+    
+    return f"""The following prompt needs improvement. Here are some examples where it failed:
+
+        Original prompt: {original_prompt}
+
+        Failed examples:
+        {chr(10).join(failure_analysis)}
+
+        Please provide an improved version of the prompt that addresses these failure patterns. 
+        The improved prompt should:
+        1. Be more specific about what output is expected
+        2. Handle edge cases better
+        3. Be clearer and more unambiguous
+        4. Maintain the same basic structure and variables
+
+        Please return only the improved prompt, nothing else."""
+
+async def get_improved_prompt(improvement_prompt: str) -> str:
+    """Get an improved prompt from the LLM"""
+    try:
+        response = openai_client.chat.completions.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are an expert prompt engineer. Provide clear, specific, and effective prompt improvements."},
+                {"role": "user", "content": improvement_prompt}
+            ],
+            temperature=0.7,
+            max_tokens=500
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        print(f"Error getting improved prompt: {e}")
+        return ""
+
+async def test_improved_prompt(improved_prompt: str, prompt_system: PromptSystem, regression_set: List[Dict], evaluation_method: str) -> float:
+    """Test the improved prompt and return the average score"""
+    try:
+        scores = []
+        
+        for test_case in regression_set[:10]:  # Test with first 10 cases for speed
+            # Format the prompt with test case variables
+            formatted_prompt = improved_prompt
+            for key, value in test_case.items():
+                if key != "expected_output":
+                    formatted_prompt = formatted_prompt.replace(f"{{{key}}}", str(value))
+            
+            # Call the LLM
+            response = openai_client.chat.completions.create(
+                model=prompt_system.model,
+                messages=[{"role": "user", "content": formatted_prompt}],
+                temperature=prompt_system.temperature,
+                max_tokens=prompt_system.max_tokens
+            )
+            
+            predicted_output = response.choices[0].message.content.strip()
+            
+            # Evaluate the result
+            score = evaluate_output(predicted_output, test_case["expected_output"], evaluation_method)
+            scores.append(score)
+        
+        return sum(scores) / len(scores) if scores else 0.0
+        
+    except Exception as e:
+        print(f"Error testing improved prompt: {e}")
+        return 0.0
+
+@app.get("/self-healing-optimization/{optimization_id}/status")
+async def get_optimization_status(optimization_id: str):
+    """Get the status of an optimization session"""
+    if optimization_id not in optimization_sessions:
+        raise HTTPException(status_code=404, detail="Optimization session not found")
+    
+    session = optimization_sessions[optimization_id]
+    return {
+        "status": session["status"],
+        "currentIteration": session["current_iteration"],
+        "totalCost": session["total_cost"],
+        "baselineScore": session["baseline_score"],
+        "bestScore": session["best_score"],
+        "results": session["results"]
+    }
+
+@app.post("/self-healing-optimization/stop")
+async def stop_optimization():
+    """Stop all running optimizations"""
+    for session in optimization_sessions.values():
+        if session["status"] == "running":
+            session["status"] = "stopped"
+    
+    return {"status": "stopped"}
 
 # Initialize scheduler on startup
 @app.on_event("startup")
