@@ -251,7 +251,16 @@ function PromptOptimizer() {
                     </div>
                     <div className="result-prompt">
                       <strong>Prompt:</strong>
-                      <pre>{result.prompt}</pre>
+                      {result.prompt ? (
+                        <pre>{result.prompt}</pre>
+                      ) : (
+                        <div className="error-message">
+                          <span className="error-icon">⚠️</span>
+                          <span className="error-text">
+                            {result.error || "Failed to generate improved prompt. This is likely due to an invalid OpenAI API key. Please check your API key configuration in the backend."}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

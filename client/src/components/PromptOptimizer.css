@@ -230,6 +230,30 @@
   .budget-grid {
     grid-template-columns: 1fr;
   }
-  
+}
 
+/* Error message styles */
+.error-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 15px;
+  margin: 10px 0;
+  border-left: 4px solid #ef4444;
+}
+
+.error-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.error-text {
+  color: #dc2626;
+  font-size: var(--font-size-sm);
+  line-height: 1.4;
+  font-weight: var(--font-weight-medium);
 }

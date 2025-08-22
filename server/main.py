@@ -852,6 +852,11 @@ async def run_optimization(optimization_id: str):
             # Get improved prompt from LLM
             improved_prompt = await get_improved_prompt(improvement_prompt)
             
+            # Check if we got an empty prompt (indicating an error)
+            error_message = None
+            if not improved_prompt:
+                error_message = "Failed to generate improved prompt. This is likely due to an invalid OpenAI API key. Please check your API key configuration."
+            
             # Test the improved prompt
             test_score = await test_improved_prompt(
                 improved_prompt,
@@ -869,7 +874,8 @@ async def run_optimization(optimization_id: str):
                 "prompt": improved_prompt,
                 "score": test_score,
                 "improvement": improvement,
-                "cost": session["total_cost"]
+                "cost": session["total_cost"],
+                "error": error_message
             }
             
             session["results"].append(result)
