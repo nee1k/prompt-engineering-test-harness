@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
 import CompareModels from './components/CompareModels'
+import PromptOptimizer from './components/PromptOptimizer'
 
 
 function App() {
@@ -38,12 +39,20 @@ function App() {
             Compare Models
           </Link>
 
+          <Link 
+            to="/prompt-optimizer" 
+            className={location.pathname === '/prompt-optimizer' ? 'active' : ''}
+          >
+            Prompt Optimizer
+          </Link>
+
         </nav>
 
         <Routes>
           <Route path="/" element={<PromptSystemsList />} />
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/compare-models" element={<CompareModels />} />
+          <Route path="/prompt-optimizer" element={<PromptOptimizer />} />
         </Routes>
       </div>
     </div>

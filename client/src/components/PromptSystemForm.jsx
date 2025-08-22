@@ -220,7 +220,17 @@ function PromptSystemForm({ onSuccess }) {
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={loading} align="center">
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+            align="center"
+            style={{
+              backgroundColor: '#2c3e50', // Same as header color
+              borderColor: '#2c3e50',
+              color: '#fff'
+            }}
+          >
             {loading ? (
               <>
                 <span className="btn-icon">

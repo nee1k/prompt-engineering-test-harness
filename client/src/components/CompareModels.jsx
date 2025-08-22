@@ -230,7 +230,7 @@ function CompareModels() {
           
           {/* Prompt Template Section */}
           <div className="form-group">
-            <label>Prompt Template:</label>
+            <label >Prompt Template:</label>
             <textarea
               name="template"
               value={promptTemplate}

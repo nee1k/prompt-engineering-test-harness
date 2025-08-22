@@ -415,7 +415,7 @@ function TestSchedules() {
         <button
           className="btn btn-large"
           style={{
-            background: 'linear-gradient(90deg, var(--primary-color, #1976d2) 0%, var(--secondary-color, #43cea2) 100%)',
+            background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
             color: 'var(--button-text-color, #fff)',
             border: 'none',
             boxShadow: '0 2px 8px rgba(25, 118, 210, 0.15)',
