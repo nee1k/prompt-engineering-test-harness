@@ -1,6 +1,0 @@
-input_text,expected_output
-"Hello, how are you?","I'm doing well, thank you for asking!"
-"What is the capital of France?","The capital of France is Paris."
-"Can you help me with math? 2+2=?","2+2 equals 4."
-"What is the weather like today?","I don't have access to real-time weather information."
-"How do I make a cup of coffee?","To make a cup of coffee, you'll need coffee grounds, hot water, and a coffee maker or filter."
