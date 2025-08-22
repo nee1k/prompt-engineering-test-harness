@@ -126,7 +126,13 @@ async def call_openai(prompt: str, model: str, temperature: float, max_tokens: i
         )
         return response.choices[0].message.content.strip()
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OpenAI API error: {str(e)}")
+        error_msg = str(e)
+        if "invalid_api_key" in error_msg.lower() or "401" in error_msg:
+            raise HTTPException(status_code=401, detail="Invalid OpenAI API key. Please check your API key configuration.")
+        elif "quota" in error_msg.lower():
+            raise HTTPException(status_code=429, detail="OpenAI API quota exceeded. Please check your usage limits.")
+        else:
+            raise HTTPException(status_code=500, detail=f"OpenAI API error: {error_msg}")
 
 async def call_llm(prompt: str, provider: str, model: str, temperature: float, max_tokens: int, top_p: float, top_k: Optional[int] = None):
     """Route LLM calls to appropriate provider"""
@@ -370,6 +376,10 @@ async def create_test_run(test_run: TestRunCreate):
             "results": results
         }
         
+    except HTTPException:
+        # Re-raise HTTPExceptions (like API key errors) without wrapping them
+        db.rollback()
+        raise
     except Exception as e:
         # Rollback any database changes if an error occurs
         db.rollback()
