@@ -1,6 +1,6 @@
 # Prompt Engineering Test Harness
 
-A testing framework for LLM prompt systems with automated evaluation and scheduling.
+A testing framework for LLM prompt systems with automated evaluation, scheduling, and AI-powered prompt optimization.
 
 ## Quick Start
 
@@ -8,23 +8,25 @@ A testing framework for LLM prompt systems with automated evaluation and schedul
 - Docker and Docker Compose
 - OpenAI API key
 
-### Installation
+### Installation & Running
 
 1. **Clone and setup:**
    ```bash
    git clone https://github.com/nee1k/prompt-systems-monitor.git
    cd prompt-systems-monitor
-   cp .env.example .env
+   cp env.template .env
    # Edit .env with your OpenAI API key
    ```
 
-2. **Start the application:**
+2. **Start all services:**
    ```bash
    docker-compose up -d
    ```
 
 3. **Access the application:**
-   Open [http://localhost](http://localhost) in your browser
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - API: [http://localhost:8000](http://localhost:8000)
+   - Nginx (proxy): [http://localhost](http://localhost)
 
 ## Environment Variables
 
@@ -41,15 +43,16 @@ SMTP_PASSWORD=your_app_password
 FROM_EMAIL=your_email@gmail.com
 ```
 
-## Usage
+## Features
 
-1. **Create Prompt System**: Define templates with `{variable}` placeholders
-2. **Upload Test Data**: CSV/JSONL files with test cases and expected outputs
-3. **Run Tests**: Choose evaluation method (fuzzy, exact, semantic)
-4. **Schedule Tests**: Automate testing with configurable intervals
-5. **Compare Models**: Test prompts across different AI models
+- **Prompt Systems**: Create and manage prompt templates with variables
+- **Test Execution**: Run tests with multiple evaluation methods
+- **Scheduled Testing**: Automate tests with configurable intervals
+- **Model Comparison**: Compare prompts across different AI models
+- **AI Prompt Optimizer**: Automatically improve prompts using LLM analysis
+- **Redis Persistence**: Optimization sessions survive server restarts
 
-### Example
+## Usage Example
 
 **Prompt Template:**
 ```
