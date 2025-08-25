@@ -1308,42 +1308,11 @@ async def startup_event():
         print("Optimization sessions will not persist across restarts")
     # Run database migrations
     try:
-        from migrate import run_migration
+        from migrations import run_migrations
 
-        run_migration()
+        run_migrations()
     except Exception as e:
-        pass
-
-    # Run evaluation function migration
-    try:
-        from migrate_evaluation_function import migrate_evaluation_function
-
-        migrate_evaluation_function()
-    except Exception as e:
-        pass
-
-    # Run email notification migration
-    try:
-        from migrate_email_notifications import migrate_email_notifications
-
-        migrate_email_notifications()
-    except Exception as e:
-        pass
-
-    # Run model comparison migration
-    try:
-        from migrate_model_comparison import run_migration
-
-        run_migration()
-    except Exception as e:
-        pass
-
-    # Run model comparison v2 migration
-    try:
-        from migrate_model_comparison_v2 import run_migration
-
-        run_migration()
-    except Exception as e:
+        print(f"Migration warning: {e}")
         pass
 
     # Load existing schedules

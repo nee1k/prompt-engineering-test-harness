@@ -39,6 +39,7 @@ try:
     from sqlalchemy.orm import sessionmaker
 
     from database import Base
+    from main import app
     from models import PromptSystem, TestResult, TestRun
 except ImportError as e:
     print(f"Warning: Could not import some modules: {e}")
@@ -96,6 +97,16 @@ def mock_openai():
         mock_response.choices[0].message.content = "Mocked OpenAI response"
         mock_openai.chat.completions.create.return_value = mock_response
         yield mock_openai
+
+
+@pytest.fixture(scope="function")
+def client(test_db, mock_redis, mock_openai):
+    """Create a test client with mocked dependencies."""
+    with patch("main.SessionLocal", test_db):
+        with patch("main.redis_client", mock_redis):
+            with patch("main.openai_client", mock_openai):
+                with TestClient(app) as test_client:
+                    yield test_client
 
 
 @pytest.fixture
