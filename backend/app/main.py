@@ -16,17 +16,16 @@ from openai import OpenAI
 from pydantic import BaseModel
 from sqlalchemy.orm import joinedload
 
-from database import SessionLocal, engine
-from models import (
-    Base,
+from app.db.session import engine, SessionLocal, Base
+from app.models import (
+    PromptSystem,
+    TestRun,
+    TestResult,
+    TestSchedule,
     ModelComparison,
     ModelComparisonResult,
-    PromptSystem,
-    TestResult,
-    TestRun,
-    TestSchedule,
 )
-from scheduler import scheduler
+from app.services.scheduler import scheduler
 
 load_dotenv()
 
@@ -463,6 +462,15 @@ async def create_test_run(test_run: TestRunCreate):
 
 @app.get("/test-runs/{test_run_id}")
 async def get_test_run(test_run_id: str):
+    """
+    Get a test run by ID
+
+    Args:
+        test_run_id: The ID of the test run to retrieve
+
+    Returns:
+        A dictionary containing the test run and its results
+    """
     db = SessionLocal()
     try:
         test_run = (
@@ -474,11 +482,15 @@ async def get_test_run(test_run_id: str):
         if not test_run:
             raise HTTPException(status_code=404, detail="Test run not found")
 
-        results = (
-            db.query(TestResult).filter(TestResult.test_run_id == test_run_id).all()
-        )
-
-        return {"test_run": test_run, "results": results}
+        results = db.query(TestResult).filter(TestResult.test_run_id == test_run_id).all()
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"Test run results: {results}")
+        
+        return {
+            "test_run": test_run,
+            "results": results
+        }
     finally:
         db.close()
 
@@ -1308,13 +1320,39 @@ async def startup_event():
         print("Optimization sessions will not persist across restarts")
     # Run database migrations
     try:
-        from migrations import run_migrations
-
-        run_migrations()
+        from app.migrations.m001_initial import run_migration
+        run_migration()
     except Exception as e:
         print(f"Migration warning: {e}")
         pass
 
+    # Run evaluation function migration
+    try:
+        from app.migrations.m002_evaluation_function import migrate_evaluation_function
+        migrate_evaluation_function()
+    except Exception:
+        pass
+
+    # Run email notification migration
+    try:
+        from app.migrations.m003_email_notifications import migrate_email_notifications
+        migrate_email_notifications()
+    except Exception:
+        pass
+
+    # Run model comparison migration
+    try:
+        from app.migrations.m004_model_comparison import run_migration
+        run_migration()
+    except Exception:
+        pass
+
+    # Run model comparison v2 migration
+    try:
+        from app.migrations.m005_model_comparison_v2 import run_migration
+        run_migration()
+    except Exception:
+        pass
     # Load existing schedules
     await scheduler.load_existing_schedules()
 

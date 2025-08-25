@@ -7,11 +7,9 @@ from typing import Any, Dict, List
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy.orm import Session
-
-from database import SessionLocal
-from email_service import email_service
-from models import PromptSystem, TestResult, TestRun, TestSchedule
-
+from app.db.session import SessionLocal
+from app.models import TestSchedule, TestRun, TestResult, PromptSystem
+from app.services.email_service import email_service
 
 class TestScheduler:
     def __init__(self):
@@ -71,8 +69,7 @@ class TestScheduler:
             db.commit()
 
             # Import the LLM calling function
-            from main import call_llm, evaluate_output
-
+            from app.main import call_llm, evaluate_output
             # Process each sample
             results = []
             total_score = 0
