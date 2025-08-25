@@ -18,6 +18,20 @@ services:
       timeout: 10s
       retries: 3
 
+  # PostgreSQL Browser (pgAdmin)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: prompt-engineering-test-harness-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
   # Redis for caching and session management
   redis:
     image: redis:7-alpine
@@ -35,7 +49,7 @@ services:
   # FastAPI Backend
   backend:
     build:
-      context: ./server
+      context: ./backend
       dockerfile: Dockerfile
     container_name: prompt-engineering-test-harness-backend
     env_file:
@@ -57,7 +71,7 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - ./server:/app
+      - ./backend:/app
       - /app/__pycache__
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -66,7 +80,7 @@ services:
   # React Frontend
   frontend:
     build:
-      context: ./client
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: prompt-engineering-test-harness-frontend
     ports:
@@ -74,7 +88,7 @@ services:
     depends_on:
       - backend
     volumes:
-      - ./client:/app
+      - ./frontend:/app
       - /app/node_modules
     restart: unless-stopped
 
@@ -95,3 +109,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  pgadmin_data:
