@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { Button } from '@mui/material'
+import { Button, Card, CardContent, CardHeader, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Chip, Stack, Typography, Dialog, DialogTitle, DialogContent, IconButton, Pagination, TextField, MenuItem, Alert, CircularProgress, Box } from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
 import PromptSystemForm from './PromptSystemForm'
 import TestRunForm from './TestRunForm'
 
@@ -243,157 +244,130 @@ function PromptSystemsList() {
   }
 
   if (loading) {
-    return <div className="loading">Loading prompt systems...</div>
+    return (
+      <Stack alignItems="center" justifyContent="center" sx={{ py: 4 }}>
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>Loading prompt systems...</Typography>
+      </Stack>
+    )
   }
 
   if (error) {
-    return <div className="alert alert-error">{error}</div>
+    return <Alert severity="error">{error}</Alert>
   }
 
   return (
     <div className="prompt-systems-container">
       
       {promptSystems.length === 0 ? (
-        <div className="empty-state">
-          <h3>No Prompt Systems Found</h3>
-          <p>Create your first prompt system to get started with testing and evaluation.</p>
-        </div>
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>No Prompt Systems Found</Typography>
+            <Typography color="text.secondary">Create your first prompt system to get started with testing and evaluation.</Typography>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="table-container">
-          <table className="systems-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Provider</th>
-                <th>Model</th>
-                <th>Created</th>
-                <th>Metrics</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
+        <Card>
+          <CardHeader title="Prompt Systems" />
+          <CardContent>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Name</TableCell>
+                    <TableCell>Provider</TableCell>
+                    <TableCell>Model</TableCell>
+                    <TableCell>Created</TableCell>
+                    <TableCell>Metrics</TableCell>
+                    <TableCell width={160}></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
               {currentItems.map((system) => (
-                <tr key={system.id} className="system-row">
-                  <td className="system-name-cell">
-                    <div className="name-content">
-                      <strong>{system.name}</strong>
-
-                    </div>
-                  </td>
-                  <td>
-                    <span className="provider-badge provider-{system.provider}" title={system.provider === 'openai' ? 'OpenAI' : 'Ollama'}>
-                      {system.provider === 'openai' ? (
-                        <img src="/logos/openai.svg" alt="OpenAI" width="16" height="16" />
-                      ) : (
-                        <img src="/logos/meta.png" alt="Ollama" width="16" height="16" />
-                      )}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="model-badge">{system.model}</span>
-                  </td>
-                  <td>{new Date(system.created_at).toLocaleDateString()}</td>
-                  <td>
-                    <div className="metrics-display">
-                      <div className="metric-item">
-                        <span className="metric-label">Score</span>
-                        <span className="metric-value score-{getSystemMetrics(system.id).avgScore >= 0.8 ? 'high' : getSystemMetrics(system.id).avgScore >= 0.6 ? 'medium' : 'low'}">
-                          {getSystemMetrics(system.id).avgScore}
-                        </span>
-                      </div>
-                      <div className="metric-item">
-                        <span className="metric-label">Runs</span>
-                        <span className="metric-value">{getSystemMetrics(system.id).totalRuns}</span>
-                      </div>
-                      <div className="metric-item">
-                        <span className="metric-label">Trend</span>
-                        <span className="metric-value trend-{getSystemMetrics(system.id).trend}">
-                          {getSystemMetrics(system.id).trend}
-                        </span>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="action-buttons">
-                      <Button 
-                        variant="outlined"
-                        size="small"
+                    <TableRow key={system.id} hover>
+                      <TableCell>
+                        <Typography fontWeight={600}>{system.name}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={system.provider === 'openai' ? 'OpenAI' : 'Ollama'} />
+                      </TableCell>
+                      <TableCell>
+                        <Chip size="small" label={system.model} variant="outlined" />
+                      </TableCell>
+                      <TableCell>{new Date(system.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                          <Stack alignItems="center">
+                            <Typography variant="caption">Score</Typography>
+                            <Typography fontWeight={600}>{getSystemMetrics(system.id).avgScore}</Typography>
+                          </Stack>
+                          <Stack alignItems="center">
+                            <Typography variant="caption">Runs</Typography>
+                            <Typography fontWeight={600}>{getSystemMetrics(system.id).totalRuns}</Typography>
+                          </Stack>
+                          <Stack alignItems="center">
+                            <Typography variant="caption">Trend</Typography>
+                            <Typography fontWeight={600}>{getSystemMetrics(system.id).trend}</Typography>
+                          </Stack>
+                        </Stack>
+                      </TableCell>
+                      <TableCell>
+                        <Stack direction="row" spacing={1}>
+                          <Button 
+                            variant="outlined"
+                            size="small"
                         onClick={() => showTemplate(system.template, system.name, JSON.parse(system.variables))}
                         title="View Template"
-                        sx={{ mr: 1 }}
                       >
                         Template
-                      </Button>
-                      <Button 
-                        variant="outlined"
-                        size="small"
+                          </Button>
+                          <Button 
+                            variant="outlined"
+                            size="small"
                         onClick={() => fetchHistory(system.id, system.name)}
                         disabled={historyLoading}
                         title="View History"
                       >
                         History
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          
-          {/* Pagination Controls */}
-          {totalPagesMain > 1 && (
-            <div className="pagination-container">
-              <div className="pagination-info">
-                Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, promptSystems.length)} of {promptSystems.length} systems
-              </div>
-              <div className="pagination-controls">
-                <div className="pagination-buttons">
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => handlePageChangeMain(currentPage - 1)}
-                    disabled={currentPage === 1}
-                  >
-                    ← Previous
-                  </button>
-                  
-                  {Array.from({ length: totalPagesMain }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      className={`btn btn-sm ${page === currentPage ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => handlePageChangeMain(page)}
-                    >
-                      {page}
-                    </button>
+                          </Button>
+                        </Stack>
+                      </TableCell>
+                    </TableRow>
                   ))}
-                  
-                  <button
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => handlePageChangeMain(currentPage + 1)}
-                    disabled={currentPage === totalPagesMain}
+                </TableBody>
+              </Table>
+            </TableContainer>
+
+            {totalPagesMain > 1 && (
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+                <Typography color="text.secondary">
+                  Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, promptSystems.length)} of {promptSystems.length} systems
+                </Typography>
+                <Stack direction="row" spacing={2} alignItems="center">
+                  <TextField
+                    select
+                    size="small"
+                    label="Items per page"
+                    value={itemsPerPage}
+                    onChange={(e) => handleItemsPerPageChangeMain(parseInt(e.target.value))}
+                    sx={{ minWidth: 140 }}
                   >
-                    Next →
-                  </button>
-                </div>
-                
-                <div className="pagination-size">
-                  <label>
-                    Items per page:
-                    <select
-                      value={itemsPerPage}
-                      onChange={(e) => handleItemsPerPageChangeMain(parseInt(e.target.value))}
-                      className="form-control-sm"
-                    >
-                      <option value={5}>5</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                    </select>
-                  </label>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                    <MenuItem value={50}>50</MenuItem>
+                  </TextField>
+                  <Pagination
+                    color="primary"
+                    count={totalPagesMain}
+                    page={currentPage}
+                    onChange={(_, page) => handlePageChangeMain(page)}
+                  />
+                </Stack>
+              </Stack>
+            )}
+          </CardContent>
+        </Card>
       )}
       
       {/* Action Buttons */}
@@ -416,272 +390,206 @@ function PromptSystemsList() {
       </div>
 
       {/* History Modal */}
-      {historyModal.show && (
-        <div className="modal-overlay" onClick={() => setHistoryModal({ show: false, data: [], systemName: '', systemId: '' })}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '95vw', maxHeight: '95vh' }}>
-            <div className="modal-header">
-              <h3>Test History - {historyModal.systemName}</h3>
-              <button 
-                className="btn-close"
+      <Dialog
+        open={historyModal.show}
+        onClose={() => setHistoryModal({ show: false, data: [], systemName: '', systemId: '' })}
+        fullWidth
+        maxWidth="md"
+      >
+        <DialogTitle>
+          Test History - {historyModal.systemName}
+          <IconButton
+            aria-label="close"
                 onClick={() => setHistoryModal({ show: false, data: [], systemName: '', systemId: '' })}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
+            sx={{ position: 'absolute', right: 8, top: 8 }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
               {historyModal.data.length === 0 ? (
-                <p>No test history found for this prompt system.</p>
+            <Typography>No test history found for this prompt system.</Typography>
               ) : (
                 <>
-                  <div className="history-table">
-                    <div className="table-header">
-                      <h3>Recent Test Runs</h3>
-                      <div className="table-controls">
-                        <label>
-                          Items per page:
-                          <select
+              <Stack direction="row" justifyContent="flex-end" sx={{ mb: 2 }}>
+                <TextField
+                  select
+                  size="small"
+                  label="Items per page"
                             value={itemsPerPage}
                             onChange={(e) => handleItemsPerPageChange(parseInt(e.target.value))}
-                            className="form-control-sm"
-                          >
-                            <option value={5}>5</option>
-                            <option value={10}>10</option>
-                            <option value={25}>25</option>
-                            <option value={50}>50</option>
-                          </select>
-                        </label>
-                      </div>
-                    </div>
-                    
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Timestamp</th>
-                          <th>Score</th>
-                          <th>Samples</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                  sx={{ minWidth: 140 }}
+                >
+                  <MenuItem value={5}>5</MenuItem>
+                  <MenuItem value={10}>10</MenuItem>
+                  <MenuItem value={25}>25</MenuItem>
+                  <MenuItem value={50}>50</MenuItem>
+                </TextField>
+              </Stack>
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Timestamp</TableCell>
+                      <TableCell>Score</TableCell>
+                      <TableCell>Samples</TableCell>
+                      <TableCell width={120}></TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
                         {currentHistory.map(run => (
-                          <tr key={run.id}>
-                            <td>{new Date(run.created_at).toLocaleString()}</td>
-                            <td>{(run.avg_score || 0).toFixed(2)}</td>
-                            <td>{run.total_samples || 0}</td>
-                            <td>
-                              <button
-                                className="btn btn-sm btn-primary"
-                                onClick={() => fetchTestRunDetails(run.id)}
-                              >
+                      <TableRow key={run.id}>
+                        <TableCell>{new Date(run.created_at).toLocaleString()}</TableCell>
+                        <TableCell>{(run.avg_score || 0).toFixed(2)}</TableCell>
+                        <TableCell>{run.total_samples || 0}</TableCell>
+                        <TableCell>
+                          <Button size="small" variant="contained" onClick={() => fetchTestRunDetails(run.id)}>
                                 View Details
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                    
-                    <div className="pagination-info">
-                      <span>
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 2 }}>
+                <Typography color="text.secondary">
                         Showing {startIndex + 1} to {Math.min(endIndex, historyModal.data.length)} of {historyModal.data.length} results
-                      </span>
-                    </div>
-                    
-                    <div className="pagination">
-                      {renderPagination()}
-                    </div>
-                  </div>
+                </Typography>
+                <Pagination
+                  color="primary"
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={(_, page) => handlePageChange(page)}
+                />
+              </Stack>
                 </>
               )}
-            </div>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       {/* Test Run Details Modal */}
-      {showDetailsModal && selectedRunDetails && (
-        <div className="modal-overlay" onClick={() => setShowDetailsModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Test Run Details</h3>
-              <button 
-                className="btn-close"
-                onClick={() => setShowDetailsModal(false)}
-              >
-                ×
-              </button>
+      <Dialog open={showDetailsModal && !!selectedRunDetails} onClose={() => setShowDetailsModal(false)} fullWidth maxWidth="md">
+        <DialogTitle>
+          Test Run Details
+          <IconButton aria-label="close" onClick={() => setShowDetailsModal(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {selectedRunDetails && (
+            <Stack spacing={2}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle1" gutterBottom>Test Run Information</Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
+                    <div>
+                      <Typography variant="caption" color="text.secondary">Test Run ID</Typography>
+                      <Typography>{selectedRunDetails.test_run.id}</Typography>
             </div>
-            
-            <div className="modal-body">
-              <div className="test-run-info">
-                <h4>Test Run Information</h4>
-                <div className="info-grid">
-                  <div className="info-item">
-                    <label>Test Run ID:</label>
-                    <span>{selectedRunDetails.test_run.id}</span>
+                    <div>
+                      <Typography variant="caption" color="text.secondary">Timestamp</Typography>
+                      <Typography>{new Date(selectedRunDetails.test_run.created_at).toLocaleString()}</Typography>
                   </div>
-                  <div className="info-item">
-                    <label>Timestamp:</label>
-                    <span>{new Date(selectedRunDetails.test_run.created_at).toLocaleString()}</span>
+                    <div>
+                      <Typography variant="caption" color="text.secondary">Average Score</Typography>
+                      <Typography>{(selectedRunDetails.test_run.avg_score || 0).toFixed(2)}</Typography>
                   </div>
-                  <div className="info-item">
-                    <label>Average Score:</label>
-                    <span>{(selectedRunDetails.test_run.avg_score || 0).toFixed(2)}</span>
+                    <div>
+                      <Typography variant="caption" color="text.secondary">Total Samples</Typography>
+                      <Typography>{selectedRunDetails.test_run.total_samples || 0}</Typography>
                   </div>
-                  <div className="info-item">
-                    <label>Total Samples:</label>
-                    <span>{selectedRunDetails.test_run.total_samples || 0}</span>
+                    <div>
+                      <Typography variant="caption" color="text.secondary">Prompt System</Typography>
+                      <Typography>{selectedRunDetails.test_run.prompt_system?.name || 'Unknown'}</Typography>
                   </div>
-                  <div className="info-item">
-                    <label>Prompt System:</label>
-                    <span>{selectedRunDetails.test_run.prompt_system?.name || 'Unknown'}</span>
-                  </div>
-                </div>
-              </div>
+                  </Box>
+                </CardContent>
+              </Card>
 
-              <div className="test-results">
-                <h4>Individual Results</h4>
-                <div className="results-table">
-                  <table>
-                    <thead>
-                      <tr>
-                        <th>Sample</th>
-                        <th>Input Variables</th>
-                        <th>Expected Output</th>
-                        <th>Predicted Output</th>
-                        <th>Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedRunDetails.results.map((result, index) => (
-                        <tr key={result.id}>
-                          <td>{parseInt(result.sample_id) + 1}</td>
-                          <td>
-                            <pre className="json-display">
-                              {JSON.stringify(JSON.parse(result.input_variables), null, 2)}
-                            </pre>
-                          </td>
-                          <td className="output-cell">{result.expected_output}</td>
-                          <td className="output-cell">{result.predicted_output}</td>
-                          <td>
-                            <span className={`score-badge ${result.score > 0.8 ? 'high' : result.score > 0.5 ? 'medium' : 'low'}`}>
-                              {result.score.toFixed(2)}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Sample</TableCell>
+                      <TableCell>Input Variables</TableCell>
+                      <TableCell>Expected Output</TableCell>
+                      <TableCell>Predicted Output</TableCell>
+                      <TableCell>Score</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {selectedRunDetails.results.map((result) => (
+                      <TableRow key={result.id}>
+                        <TableCell>{parseInt(result.sample_id) + 1}</TableCell>
+                        <TableCell sx={{ maxWidth: 260 }}>
+                          <pre style={{ margin: 0 }}>{JSON.stringify(JSON.parse(result.input_variables), null, 2)}</pre>
+                        </TableCell>
+                        <TableCell sx={{ maxWidth: 260, wordBreak: 'break-word' }}>{result.expected_output}</TableCell>
+                        <TableCell sx={{ maxWidth: 260, wordBreak: 'break-word' }}>{result.predicted_output}</TableCell>
+                        <TableCell>{result.score.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Template Modal */}
-      {templateModal.show && (
-        <div className="modal-overlay" onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>Template - {templateModal.systemName}</h3>
-              <button 
-                className="btn-close"
-                onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <div style={{ marginBottom: '20px' }}>
-                <h4>Variables</h4>
-                <div style={{ 
-                  background: '#e3f2fd', 
-                  padding: '10px', 
-                  borderRadius: '4px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px'
-                }}>
-                  {templateModal.variables.map((variable, index) => (
-                    <span key={index} style={{
-                      background: '#1976d2',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '500'
-                    }}>
-                      {variable}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h4>Template</h4>
-                <div style={{ 
-                  background: '#f8f9fa', 
-                  padding: '15px', 
-                  borderRadius: '4px', 
-                  fontFamily: 'monospace',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                  maxHeight: '400px',
-                  overflowY: 'auto'
-                }}>
-                  {templateModal.template}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={templateModal.show} onClose={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })} fullWidth maxWidth="sm">
+        <DialogTitle>
+          Template - {templateModal.systemName}
+          <IconButton aria-label="close" onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Typography variant="subtitle2" gutterBottom>Variables</Typography>
+          <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ mb: 2 }}>
+            {templateModal.variables.map((variable, index) => (
+              <Chip key={index} label={variable} color="primary" size="small" />
+            ))}
+          </Stack>
+          <Typography variant="subtitle2" gutterBottom>Template</Typography>
+          <Paper variant="outlined" sx={{ p: 2, maxHeight: 400, overflow: 'auto', fontFamily: 'monospace' }}>
+            {templateModal.template}
+          </Paper>
+        </DialogContent>
+      </Dialog>
 
       {/* Create System Modal */}
-      {createSystemModal && (
-        <div className="modal-overlay" onClick={() => setCreateSystemModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
-            <div className="modal-header">
-              <h3>Create Prompt System</h3>
-              <button 
-                className="btn-close"
-                onClick={() => setCreateSystemModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <PromptSystemForm 
-                onSuccess={() => {
-                  setCreateSystemModal(false)
-                  fetchPromptSystems()
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={createSystemModal} onClose={() => setCreateSystemModal(false)} fullWidth maxWidth="md">
+        <DialogTitle>
+          Create Prompt System
+          <IconButton aria-label="close" onClick={() => setCreateSystemModal(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <PromptSystemForm 
+            onSuccess={() => {
+              setCreateSystemModal(false)
+              fetchPromptSystems()
+            }}
+          />
+        </DialogContent>
+      </Dialog>
 
       {/* Test System Modal */}
-      {testSystemModal && (
-        <div className="modal-overlay" onClick={() => setTestSystemModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '1000px' }}>
-            <div className="modal-header">
-              <h3>Test a System</h3>
-              <button 
-                className="btn-close"
-                onClick={() => setTestSystemModal(false)}
-              >
-                ×
-              </button>
-            </div>
-            <div className="modal-body">
-              <TestRunForm />
-            </div>
-          </div>
-        </div>
-      )}
+      <Dialog open={testSystemModal} onClose={() => setTestSystemModal(false)} fullWidth maxWidth="lg">
+        <DialogTitle>
+          Test a System
+          <IconButton aria-label="close" onClick={() => setTestSystemModal(false)} sx={{ position: 'absolute', right: 8, top: 8 }}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <TestRunForm />
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
