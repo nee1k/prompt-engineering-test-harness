@@ -1322,8 +1322,12 @@ async def startup_event():
     try:
         from app.migrations.m001_initial import run_migration
         run_migration()
+<<<<<<< HEAD
     except Exception as e:
         print(f"Migration warning: {e}")
+=======
+    except Exception:
+>>>>>>> 5932db2 (fix(api): rename migrations to valid modules and fix imports; add __init__ packages)
         pass
 
     # Run evaluation function migration
