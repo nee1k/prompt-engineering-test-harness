@@ -26,6 +26,7 @@ function App() {
           </Typography>
           <Box sx={{ display: 'flex', gap: 1 }}>
             <Button
+              variant={location.pathname === '/' ? 'contained' : 'text'}
               color={location.pathname === '/' ? 'secondary' : 'inherit'}
               component={RouterLink}
               to="/"
@@ -33,6 +34,7 @@ function App() {
               Prompt Systems
             </Button>
             <Button
+              variant={location.pathname === '/schedules' ? 'contained' : 'text'}
               color={location.pathname === '/schedules' ? 'secondary' : 'inherit'}
               component={RouterLink}
               to="/schedules"
@@ -40,6 +42,7 @@ function App() {
               Test Schedules
             </Button>
             <Button
+              variant={location.pathname === '/compare-models' ? 'contained' : 'text'}
               color={location.pathname === '/compare-models' ? 'secondary' : 'inherit'}
               component={RouterLink}
               to="/compare-models"
@@ -47,6 +50,7 @@ function App() {
               Compare Models
             </Button>
             <Button
+              variant={location.pathname === '/prompt-optimizer' ? 'contained' : 'text'}
               color={location.pathname === '/prompt-optimizer' ? 'secondary' : 'inherit'}
               component={RouterLink}
               to="/prompt-optimizer"
