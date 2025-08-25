@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+  MenuItem,
+  Grid,
+  Button,
+  Stack,
+  Alert,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
+} from '@mui/material'
 
 const API_BASE = window.location.hostname === 'localhost' && window.location.port === '3000' 
   ? 'http://localhost:8000' 
@@ -99,161 +118,137 @@ function TestRunForm() {
   }
 
   return (
-    <div className="run-test-container">      
+    <Stack spacing={2}>
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <Alert severity={message.includes('Error') ? 'error' : 'success'}>
           {message}
-        </div>
+        </Alert>
       )}
 
-      <div className="test-form-container">
-        <form onSubmit={handleRunTest} className="test-form">
-          <div className="form-group">
-            <label>Select Prompt System:</label>
-            <select 
-              value={selectedSystem} 
-              onChange={(e) => setSelectedSystem(e.target.value)}
-              required
-            >
-              <option value="">Choose a prompt system...</option>
-              {promptSystems.map((system) => (
-                <option key={system.id} value={system.id}>
-                  {system.name} ({system.model})
-                </option>
-              ))}
-            </select>
-          </div>
+      <Card>
+        <CardHeader title="Run Test" />
+        <CardContent>
+          <form onSubmit={handleRunTest}>
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Select Prompt System"
+                  value={selectedSystem}
+                  onChange={(e) => setSelectedSystem(e.target.value)}
+                  required
+                >
+                  <MenuItem value="">Choose a prompt system...</MenuItem>
+                  {promptSystems.map((system) => (
+                    <MenuItem key={system.id} value={system.id}>
+                      {system.name} ({system.model})
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
 
-          <div className="form-group">
-            <label>Evaluation Function:</label>
-            <select 
-              value={selectedEvaluationFunction} 
-              onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
-              required
-            >
-              {evaluationFunctions.map((func) => (
-                <option key={func.id} value={func.id}>
-                  {func.name} - {func.description}
-                </option>
-              ))}
-            </select>
-          </div>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  select
+                  label="Evaluation Function"
+                  value={selectedEvaluationFunction}
+                  onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
+                  required
+                >
+                  {evaluationFunctions.map((func) => (
+                    <MenuItem key={func.id} value={func.id}>
+                      {func.name} - {func.description}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
 
-          <div className="form-group">
-            <label>Upload Regression Set (CSV or JSONL):</label>
-            <div className="file-upload-container">
-              <div className="file-upload" onClick={() => document.getElementById('file-input').click()}>
-                <input
-                  id="file-input"
-                  type="file"
-                  accept=".csv,.jsonl"
-                  onChange={handleFileUpload}
-                  disabled={loading}
-                  style={{ display: 'none' }}
-                />
-                <div className="upload-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                  </svg>
-                </div>
-                <div className="upload-content">
-                  <p className="upload-title">
-                    {file ? file.name : 'Click to select file'}
-                  </p>
-                  <p className="upload-description">
-                    File should contain columns for variables and an 'expected_output' column
-                  </p>
-                  {!file && (
-                    <p className="upload-hint">
-                      Supports .csv and .jsonl files
-                    </p>
+              <Grid item xs={12}>
+                <Stack spacing={1}>
+                  <Typography variant="subtitle2">Upload Regression Set (CSV or JSONL)</Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={() => document.getElementById('file-input').click()}
+                    disabled={loading}
+                  >
+                    {file ? file.name : 'Select file'}
+                  </Button>
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept=".csv,.jsonl"
+                    onChange={handleFileUpload}
+                    disabled={loading}
+                    style={{ display: 'none' }}
+                  />
+                </Stack>
+              </Grid>
+
+              {regressionSet.length > 0 && (
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2">Preview ({regressionSet.length} samples)</Typography>
+                  <Paper variant="outlined" sx={{ maxHeight: 180, overflow: 'auto', p: 1, bgcolor: 'grey.50' }}>
+                    <pre style={{ margin: 0 }}>{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
+                  </Paper>
+                  {regressionSet.length > 3 && (
+                    <Typography variant="caption" color="text.secondary">... and {regressionSet.length - 3} more samples</Typography>
                   )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {regressionSet.length > 0 && (
-            <div className="form-group">
-              <label>Preview ({regressionSet.length} samples):</label>
-              <div className="preview-container">
-                <pre className="preview-content">{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
-                {regressionSet.length > 3 && <p className="preview-more">... and {regressionSet.length - 3} more samples</p>}
-              </div>
-            </div>
-          )}
-
-          <div className="form-actions">
-            <button 
-              type="submit" 
-              className="btn btn-primary" 
-              disabled={loading || !selectedSystem || regressionSet.length === 0}
-            >
-              {loading ? (
-                <>
-                  Running Test...
-                </>
-              ) : (
-                <>
-                  Run Test
-                </>
+                </Grid>
               )}
-            </button>
-          </div>
-        </form>
-      </div>
+
+              <Grid item xs={12}>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button type="submit" variant="contained" disabled={loading || !selectedSystem || regressionSet.length === 0}>
+                    {loading ? 'Running Test...' : 'Run Test'}
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </form>
+        </CardContent>
+      </Card>
 
       {testResult && (
-        <div className="results-container">
-          <div className="results-header">
-            <h3>Test Results</h3>
-            <div className="results-summary">
-              <div className="summary-item">
-                <span className="summary-label">Average Score:</span>
-                <span className={`score ${getScoreClass(testResult.avg_score)}`}>
-                  {(testResult.avg_score * 100).toFixed(1)}%
-                </span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Total Samples:</span>
-                <span className="summary-value">{testResult.total_samples}</span>
-              </div>
-            </div>
-          </div>
+        <Card>
+          <CardHeader title="Test Results" />
+          <CardContent>
+            <Stack direction="row" spacing={4} sx={{ mb: 2 }}>
+              <Typography>
+                <strong>Average Score:</strong>{' '}
+                <span>{(testResult.avg_score * 100).toFixed(1)}%</span>
+              </Typography>
+              <Typography>
+                <strong>Total Samples:</strong>{' '}
+                <span>{testResult.total_samples}</span>
+              </Typography>
+            </Stack>
 
-          <div className="results-table-container">
-            <table className="results-table">
-              <thead>
-                <tr>
-                  <th>Sample</th>
-                  <th>Expected Output</th>
-                  <th>Predicted Output</th>
-                  <th>Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {testResult.results.map((result, index) => (
-                  <tr key={index}>
-                    <td className="sample-id">{result.sample_id}</td>
-                    <td className="output-cell">
-                      {result.expected_output}
-                    </td>
-                    <td className="output-cell">
-                      {result.predicted_output}
-                    </td>
-                    <td className="score-cell">
-                      <span className={`score ${getScoreClass(result.score)}`}>
-                        {(result.score * 100).toFixed(1)}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Sample</TableCell>
+                    <TableCell>Expected Output</TableCell>
+                    <TableCell>Predicted Output</TableCell>
+                    <TableCell>Score</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {testResult.results.map((result, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{result.sample_id}</TableCell>
+                      <TableCell sx={{ maxWidth: 300, wordBreak: 'break-word' }}>{result.expected_output}</TableCell>
+                      <TableCell sx={{ maxWidth: 300, wordBreak: 'break-word' }}>{result.predicted_output}</TableCell>
+                      <TableCell>{(result.score * 100).toFixed(1)}%</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
       )}
-    </div>
+    </Stack>
   )
 }
 

@@ -1,4 +1,16 @@
 import React, { useState, useEffect } from 'react'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+  Typography,
+  MenuItem,
+  Grid,
+  Button,
+  Stack,
+  Alert
+} from '@mui/material'
 import axios from 'axios'
 
 const API_BASE = window.location.hostname === 'localhost' && window.location.port === '3000' 
@@ -109,147 +121,132 @@ function PromptSystemForm({ onSuccess }) {
   }
 
   return (
-    <div className="create-system-container">      
-      {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
-          {message}
-        </div>
-      )}
-
-      <div className="form-container">
-        <form onSubmit={handleSubmit} className="create-form">
-        <div className="form-group">
-          <label>Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            placeholder="Enter system name"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Prompt Template:</label>
-          <textarea
-            name="template"
-            value={formData.template}
-            onChange={handleChange}
-            required
-            placeholder="Enter prompt template with {variable} placeholders"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Variables (comma-separated):</label>
-          <input
-            type="text"
-            name="variables"
-            value={formData.variables}
-            onChange={handleChange}
-            required
-            placeholder="e.g., text, language, style"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Provider:</label>
-          <select name="provider" value={formData.provider} onChange={handleProviderChange} className="provider-select">
-            <option value="openai">OpenAI</option>
-            <option value="ollama">Ollama (Local)</option>
-          </select>
-          {formData.provider === 'ollama' && ollamaStatus && (
-            <div className="ollama-status">
-              {ollamaStatus.status === 'running' ? (
-                <span className="status-success">✓ Ollama is running</span>
-              ) : (
-                <span className="status-error">✗ Ollama is not running</span>
-              )}
-            </div>
+    <Card sx={{ maxWidth: 900, mx: 'auto' }}>
+      <CardHeader title="Create Prompt System" />
+      <CardContent>
+        <Stack spacing={2}>
+          {message && (
+            <Alert severity={message.includes('Error') ? 'error' : 'success'}>
+              {message}
+            </Alert>
           )}
-        </div>
 
-        <div className="form-group">
-          <label>Model:</label>
-          <select name="model" value={formData.model} onChange={handleChange}>
-            {getCurrentModels().map((model) => (
-              <option key={model.id} value={model.id}>
-                {model.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          <form onSubmit={handleSubmit}>
+            <Grid container spacing={2}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter system name"
+                />
+              </Grid>
 
-        <div className="form-group">
-          <label>Temperature:</label>
-          <input
-            type="number"
-            name="temperature"
-            value={formData.temperature}
-            onChange={handleChange}
-            min="0"
-            max="2"
-            step="0.1"
-          />
-        </div>
+              <Grid item xs={12}>
+                <TextField
+                  label="Prompt Template"
+                  name="template"
+                  value={formData.template}
+                  onChange={handleChange}
+                  required
+                  placeholder="Enter prompt template with {variable} placeholders"
+                  multiline
+                  minRows={4}
+                />
+              </Grid>
 
-        <div className="form-group">
-          <label>Max Tokens:</label>
-          <input
-            type="number"
-            name="max_tokens"
-            value={formData.max_tokens}
-            onChange={handleChange}
-            min="1"
-            max="4000"
-          />
-        </div>
+              <Grid item xs={12}>
+                <TextField
+                  label="Variables (comma-separated)"
+                  name="variables"
+                  value={formData.variables}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., text, language, style"
+                />
+              </Grid>
 
-        <div className="form-group">
-          <label>Top P:</label>
-          <input
-            type="number"
-            name="top_p"
-            value={formData.top_p}
-            onChange={handleChange}
-            min="0"
-            max="1"
-            step="0.1"
-          />
-        </div>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Provider"
+                  name="provider"
+                  value={formData.provider}
+                  onChange={handleProviderChange}
+                  select
+                >
+                  <MenuItem value="openai">OpenAI</MenuItem>
+                  <MenuItem value="ollama">Ollama (Local)</MenuItem>
+                </TextField>
+                {formData.provider === 'ollama' && ollamaStatus && (
+                  <Typography variant="body2" sx={{ mt: 1 }} color={ollamaStatus.status === 'running' ? 'success.main' : 'error.main'}>
+                    {ollamaStatus.status === 'running' ? '✓ Ollama is running' : '✗ Ollama is not running'}
+                  </Typography>
+                )}
+              </Grid>
 
-        <div className="form-actions">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={loading}
-            align="center"
-            style={{
-              backgroundColor: '#2c3e50', // Same as header color
-              borderColor: '#2c3e50',
-              color: '#fff'
-            }}
-          >
-            {loading ? (
-              <>
-                <span className="btn-icon">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,4A8,8 0 0,1 20,12A8,8 0 0,1 12,20A8,8 0 0,1 4,12A8,8 0 0,1 12,4M12,6A6,6 0 0,0 6,12A6,6 0 0,0 12,18A6,6 0 0,0 18,12A6,6 0 0,0 12,6M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z"/>
-                  </svg>
-                </span>
-                Creating...
-              </>
-            ) : (
-              <>
-                Create Prompt System
-              </>
-            )}
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  label="Model"
+                  name="model"
+                  value={formData.model}
+                  onChange={handleChange}
+                  select
+                >
+                  {getCurrentModels().map((model) => (
+                    <MenuItem key={model.id} value={model.id}>
+                      {model.name}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="Temperature"
+                  type="number"
+                  name="temperature"
+                  value={formData.temperature}
+                  onChange={handleChange}
+                  inputProps={{ min: 0, max: 2, step: 0.1 }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="Max Tokens"
+                  type="number"
+                  name="max_tokens"
+                  value={formData.max_tokens}
+                  onChange={handleChange}
+                  inputProps={{ min: 1, max: 4000 }}
+                />
+              </Grid>
+
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="Top P"
+                  type="number"
+                  name="top_p"
+                  value={formData.top_p}
+                  onChange={handleChange}
+                  inputProps={{ min: 0, max: 1, step: 0.1 }}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Stack direction="row" justifyContent="flex-end">
+                  <Button type="submit" variant="contained" disabled={loading}>
+                    {loading ? 'Creating...' : 'Create Prompt System'}
+                  </Button>
+                </Stack>
+              </Grid>
+            </Grid>
+          </form>
+        </Stack>
+      </CardContent>
+    </Card>
   )
 }
 

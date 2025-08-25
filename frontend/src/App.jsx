@@ -1,5 +1,13 @@
 import React from 'react'
-import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import { Routes, Route, Link as RouterLink, useLocation } from 'react-router-dom'
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Button,
+  Box
+} from '@mui/material'
 import PromptSystemsList from './components/PromptSystemsList'
 import TestSchedules from './components/TestSchedules'
 import CompareModels from './components/CompareModels'
@@ -11,50 +19,52 @@ function App() {
 
   return (
     <div>
-      <header className="header">
-        <h1>Prompt Engineering Test Harness</h1>
-      </header>
-      
-      <div className="container">
-        <nav className="nav">
-          <Link 
-            to="/" 
-            className={location.pathname === '/' ? 'active' : ''}
-          >
-            Prompt Systems
-          </Link>
+      <AppBar position="static" color="primary">
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Prompt Engineering Test Harness
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button
+              color={location.pathname === '/' ? 'secondary' : 'inherit'}
+              component={RouterLink}
+              to="/"
+            >
+              Prompt Systems
+            </Button>
+            <Button
+              color={location.pathname === '/schedules' ? 'secondary' : 'inherit'}
+              component={RouterLink}
+              to="/schedules"
+            >
+              Test Schedules
+            </Button>
+            <Button
+              color={location.pathname === '/compare-models' ? 'secondary' : 'inherit'}
+              component={RouterLink}
+              to="/compare-models"
+            >
+              Compare Models
+            </Button>
+            <Button
+              color={location.pathname === '/prompt-optimizer' ? 'secondary' : 'inherit'}
+              component={RouterLink}
+              to="/prompt-optimizer"
+            >
+              Prompt Optimizer
+            </Button>
+          </Box>
+        </Toolbar>
+      </AppBar>
 
-
-          <Link 
-            to="/schedules" 
-            className={location.pathname === '/schedules' ? 'active' : ''}
-          >
-            Test Schedules
-          </Link>
-
-          <Link 
-            to="/compare-models" 
-            className={location.pathname === '/compare-models' ? 'active' : ''}
-          >
-            Compare Models
-          </Link>
-
-          <Link 
-            to="/prompt-optimizer" 
-            className={location.pathname === '/prompt-optimizer' ? 'active' : ''}
-          >
-            Prompt Optimizer
-          </Link>
-
-        </nav>
-
+      <Container sx={{ py: 3 }}>
         <Routes>
           <Route path="/" element={<PromptSystemsList />} />
           <Route path="/schedules" element={<TestSchedules />} />
           <Route path="/compare-models" element={<CompareModels />} />
           <Route path="/prompt-optimizer" element={<PromptOptimizer />} />
         </Routes>
-      </div>
+      </Container>
     </div>
   )
 }

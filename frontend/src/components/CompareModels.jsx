@@ -1,5 +1,25 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  TextField,
+  MenuItem,
+  Grid,
+  Button,
+  Stack,
+  Alert,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip
+} from '@mui/material'
 
 const API_BASE = window.location.hostname === 'localhost' && window.location.port === '3000' 
   ? 'http://localhost:8000' 
@@ -218,33 +238,40 @@ function CompareModels() {
   }
 
   return (
-    <div className="run-test-container">
+    <Stack spacing={2}>
       {message && (
-        <div className={`alert ${message.includes('Error') ? 'alert-error' : 'alert-success'}`}>
+        <Alert severity={message.includes('Error') ? 'error' : 'success'}>
           {message}
-        </div>
+        </Alert>
       )}
 
-      <div className="test-form-container">
-        <form onSubmit={handleRunComparison} className="test-form">
-          
-          {/* Prompt Template Section */}
-          <div className="form-group">
-            <label >Prompt Template:</label>
-            <textarea
-              name="template"
-              value={promptTemplate}
-              onChange={e => setPromptTemplate(e.target.value)}
-              required
-              placeholder="Enter prompt template with {variable} placeholders"
-            />
-          </div>
+      <Card>
+        <CardHeader title="Compare Models" />
+        <CardContent>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                label="Prompt Template"
+                name="template"
+                value={promptTemplate}
+                onChange={e => setPromptTemplate(e.target.value)}
+                required
+                placeholder="Enter prompt template with {variable} placeholders"
+                multiline
+                minRows={4}
+              />
+            </Grid>
 
-          {/* Regression Set Section */}
-          <div className="form-group">
-            <label>Upload Regression Set (CSV or JSONL):</label>
-            <div className="file-upload-container">
-              <div className="file-upload" onClick={() => document.getElementById('regression-file-input').click()}>
+            <Grid item xs={12}>
+              <Stack spacing={1}>
+                <Typography variant="subtitle2">Upload Regression Set (CSV or JSONL)</Typography>
+                <Button
+                  variant="outlined"
+                  onClick={() => document.getElementById('regression-file-input').click()}
+                  disabled={loading}
+                >
+                  {regressionFile ? regressionFile.name : 'Select file'}
+                </Button>
                 <input
                   id="regression-file-input"
                   type="file"
@@ -253,59 +280,40 @@ function CompareModels() {
                   disabled={loading}
                   style={{ display: 'none' }}
                 />
-                <div className="upload-icon">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M14,2H6A2,2 0 0,0 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2M18,20H6V4H13V9H18V20Z"/>
-                  </svg>
-                </div>
-                <div className="upload-content">
-                  <p className="upload-title">
-                    {regressionFile ? regressionFile.name : 'Click to select file'}
-                  </p>
-                  <p className="upload-description">
-                    File should contain columns for variables and an 'expected_output' column
-                  </p>
-                  {!regressionFile && (
-                    <p className="upload-hint">
-                      Supports .csv and .jsonl files
-                    </p>
+              </Stack>
+              {regressionSet.length > 0 && (
+                <Stack spacing={1} sx={{ mt: 2 }}>
+                  <Typography variant="subtitle2">Preview ({regressionSet.length} samples)</Typography>
+                  <Paper variant="outlined" sx={{ maxHeight: 180, overflow: 'auto', p: 1, bgcolor: 'grey.50' }}>
+                    <pre style={{ margin: 0 }}>{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
+                  </Paper>
+                  {regressionSet.length > 3 && (
+                    <Typography variant="caption" color="text.secondary">... and {regressionSet.length - 3} more samples</Typography>
                   )}
-                </div>
-              </div>
-            </div>
-            {regressionSet.length > 0 && (
-              <div className="form-group">
-                <label>Preview ({regressionSet.length} samples):</label>
-                <div className="preview-container">
-                  <pre className="preview-content">{JSON.stringify(regressionSet.slice(0, 3), null, 2)}</pre>
-                  {regressionSet.length > 3 && <p className="preview-more">... and {regressionSet.length - 3} more samples</p>}
-                </div>
-              </div>
-            )}
-          </div>
+                </Stack>
+              )}
+            </Grid>
 
-          {/* Evaluation Function Section */}
-          <div className="form-group">
-            <label>Evaluation Function:</label>
-            <select 
-              value={selectedEvaluationFunction} 
-              onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
-              required
-            >
-              {evaluationFunctions.map((func) => (
-                <option key={func.id} value={func.id}>
-                  {func.name} - {func.description}
-                </option>
-              ))}
-            </select>
-          </div>
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Evaluation Function"
+                value={selectedEvaluationFunction}
+                onChange={(e) => setSelectedEvaluationFunction(e.target.value)}
+                required
+              >
+                {evaluationFunctions.map((func) => (
+                  <MenuItem key={func.id} value={func.id}>
+                    {func.name} - {func.description}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Grid>
 
-          {/* Models Selection Section */}
-          <div className="form-group">
-            <label>Select Model to Compare:</label>
-            <div className="model-selection-container">
-              <select
-                className="form-control"
+            <Grid item xs={12} md={6}>
+              <TextField
+                select
+                label="Select Model to Compare"
                 value=""
                 onChange={e => {
                   const modelId = e.target.value;
@@ -314,21 +322,20 @@ function CompareModels() {
                   }
                 }}
               >
-                <option value="">Choose a model...</option>
+                <MenuItem value="">Choose a model...</MenuItem>
                 {Object.entries(availableModels).map(([provider, models]) =>
                   models.map(model => (
-                    <option key={model.id} value={model.id}>
+                    <MenuItem key={model.id} value={model.id}>
                       {model.name} ({getProviderName(provider)})
-                    </option>
+                    </MenuItem>
                   ))
                 )}
-              </select>
+              </TextField>
               {selectedModels.length > 0 && (
-                <div className="selected-models-list" style={{ marginTop: '1rem' }}>
-                  <label>Selected Models:</label>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                <Stack spacing={1} sx={{ mt: 1 }}>
+                  <Typography variant="subtitle2">Selected Models</Typography>
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
                     {selectedModels.map(modelId => {
-                      // Find model info
                       let foundModel = null;
                       let foundProvider = null;
                       Object.entries(availableModels).forEach(([provider, models]) => {
@@ -340,108 +347,83 @@ function CompareModels() {
                       });
                       if (!foundModel) return null;
                       return (
-                        <li key={modelId} style={{ display: 'flex', alignItems: 'center', marginBottom: 4 }}>
-                          <span style={{ marginRight: 8 }}>
-                            {foundModel.name} <span style={{ color: '#888' }}>({getProviderName(foundProvider)})</span>
-                          </span>
-                          <button
-                            type="button"
-                            className="btn btn-xs btn-danger"
-                            style={{ marginLeft: 8 }}
-                            onClick={() => setSelectedModels(selectedModels.filter(id => id !== modelId))}
-                            title="Remove"
-                          >
-                            ×
-                          </button>
-                        </li>
+                        <Chip
+                          key={modelId}
+                          label={`${foundModel.name} (${getProviderName(foundProvider)})`}
+                          onDelete={() => setSelectedModels(selectedModels.filter(id => id !== modelId))}
+                        />
                       );
                     })}
-                  </ul>
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-secondary"
-                    onClick={() => setSelectedModels([])}
-                  >
-                    Clear All
-                  </button>
-                </div>
+                  </Stack>
+                  <Stack direction="row">
+                    <Button size="small" variant="outlined" onClick={() => setSelectedModels([])}>Clear All</Button>
+                  </Stack>
+                </Stack>
               )}
-            </div>
-          </div>
+            </Grid>
 
+            <Grid item xs={12}>
+              <Stack direction="row" justifyContent="flex-end">
+                <Button
+                  variant="contained"
+                  disabled={loading || !promptTemplate || selectedModels.length === 0 || regressionSet.length === 0}
+                  onClick={handleRunComparison}
+                >
+                  {loading ? 'Running Comparison...' : 'Compare Models'}
+                </Button>
+              </Stack>
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
 
-          {/* Compare Button */}
-          <div className="form-actions">
-            <button
-              type="button"
-              className="btn btn-primary"
-              disabled={loading || !promptTemplate || selectedModels.length === 0 || regressionSet.length === 0}
-              onClick={handleRunComparison}
-            >
-              {loading ? 'Running Comparison...' : 'Compare Models'}
-            </button>
-          </div>
-        </form>
-      </div>
-
-      {/* Comparison Results */}
       {comparisonResults.length > 0 && (
-        <div className="results-container">
-          <div className="results-header">
-            <h3>Comparison Results</h3>
-            <div className="results-summary">
-              <div className="summary-item">
-                <span className="summary-label">Models Tested:</span>
-                <span className="summary-value">{comparisonResults.length}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Best Score:</span>
-                <span className={`score ${getScoreClass(Math.max(...comparisonResults.map(r => r.avg_score || 0)))}`}>
-                  {(Math.max(...comparisonResults.map(r => r.avg_score || 0)) * 100).toFixed(1)}%
-                </span>
-              </div>
-            </div>
-          </div>
+        <Card>
+          <CardHeader title="Comparison Results" />
+          <CardContent>
+            <Stack direction="row" spacing={4} sx={{ mb: 2 }}>
+              <Typography>
+                <strong>Models Tested:</strong> {comparisonResults.length}
+              </Typography>
+              <Typography>
+                <strong>Best Score:</strong>{' '}
+                {((Math.max(...comparisonResults.map(r => r.avg_score || 0)) || 0) * 100).toFixed(1)}%
+              </Typography>
+            </Stack>
 
-          <div className="results-table-container">
-            <table className="results-table">
-              <thead>
-                <tr>
-                  <th>Model</th>
-                  <th>Provider</th>
-                  <th>Average Score</th>
-                  <th>Total Samples</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparisonResults
-                  .slice()
-                  .sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0))
-                  .map((result, index) => (
-                    <tr key={index}>
-                      <td>{formatModelName(result.model)}</td>
-                      <td>{getProviderName(result.provider)}</td>
-                      <td className="score-cell">
-                        <span className={`score ${getScoreClass(result.avg_score || 0)}`}>
-                          {((result.avg_score || 0) * 100).toFixed(1)}%
-                        </span>
-                      </td>
-                      <td>{result.total_samples}</td>
-                      <td>
-                        <span className={`status-badge ${result.status === 'completed' ? 'active' : 'inactive'}`}>
-                          {result.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <TableContainer component={Paper}>
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Model</TableCell>
+                    <TableCell>Provider</TableCell>
+                    <TableCell>Average Score</TableCell>
+                    <TableCell>Total Samples</TableCell>
+                    <TableCell>Status</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {comparisonResults
+                    .slice()
+                    .sort((a, b) => (b.avg_score || 0) - (a.avg_score || 0))
+                    .map((result, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{formatModelName(result.model)}</TableCell>
+                        <TableCell>{getProviderName(result.provider)}</TableCell>
+                        <TableCell>{((result.avg_score || 0) * 100).toFixed(1)}%</TableCell>
+                        <TableCell>{result.total_samples}</TableCell>
+                        <TableCell>
+                          <Chip size="small" color={result.status === 'completed' ? 'success' : 'default'} label={result.status} />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </Card>
       )}
-
-    </div>
+    </Stack>
   )
 }
 
