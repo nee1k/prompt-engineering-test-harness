@@ -7,7 +7,11 @@ from fastapi import HTTPException
 from openai import OpenAI
 
 
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Lazily or conditionally initialize the OpenAI client to avoid requiring an API key during tests
+if os.getenv("TESTING") == "true":
+    openai_client = None
+else:
+    openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 async def call_ollama(
@@ -52,10 +56,11 @@ async def call_openai(
     top_k: Optional[int] = None,
 ):
     api_key = os.getenv("OPENAI_API_KEY")
+    # In TESTING mode, return a deterministic stubbed response
+    if os.getenv("TESTING") == "true":
+        return "TESTING_OPENAI_RESPONSE"
     if not api_key:
-        raise HTTPException(
-            status_code=500, detail="OpenAI API key not found in environment variables"
-        )
+        raise HTTPException(status_code=500, detail="OpenAI API key not found in environment variables")
     try:
         response = openai_client.chat.completions.create(
             model=model,
