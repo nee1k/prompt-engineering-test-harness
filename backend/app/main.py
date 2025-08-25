@@ -12,9 +12,8 @@ import redis
 from dotenv import load_dotenv
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from openai import OpenAI
 from pydantic import BaseModel
-from sqlalchemy.orm import joinedload
+from openai import OpenAI
 from app.db.session import engine, SessionLocal, Base
 from app.models import (
     PromptSystem,
@@ -25,11 +24,12 @@ from app.models import (
     ModelComparisonResult,
 )
 from app.services.scheduler import scheduler
+from app.api.routers import prompt_systems as prompt_systems_router
+from app.api.routers import test_runs as test_runs_router
+from app.api.routers import test_schedules as test_schedules_router
+from app.api.routers import model_comparisons as model_comparisons_router
 
 load_dotenv()
-
-# Initialize OpenAI client
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # Initialize Redis client
 redis_url = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -53,6 +53,12 @@ app.add_middleware(
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
+
+# Include routers (migrating incrementally)
+app.include_router(prompt_systems_router.router)
+app.include_router(test_runs_router.router)
+app.include_router(test_schedules_router.router)
+app.include_router(model_comparisons_router.router)
 
 
 class PromptSystemCreate(BaseModel):
@@ -1317,41 +1323,42 @@ async def startup_event():
     except Exception as e:
         print(f"⚠ Redis connection failed: {e}")
         print("Optimization sessions will not persist across restarts")
-    # Run database migrations
-    try:
-        from app.migrations.m001_initial import run_migration
-        run_migration()
-    except Exception as e:
-        print(f"Migration warning: {e}")
-        pass
+    # Run database migrations unless in test mode
+    if os.getenv("TESTING") != "true":
+        try:
+            from app.migrations.m001_initial import run_migration
+            run_migration()
+        except Exception as e:
+            print(f"Migration warning: {e}")
+            pass
 
-    # Run evaluation function migration
-    try:
-        from app.migrations.m002_evaluation_function import migrate_evaluation_function
-        migrate_evaluation_function()
-    except Exception:
-        pass
+        # Run evaluation function migration
+        try:
+            from app.migrations.m002_evaluation_function import migrate_evaluation_function
+            migrate_evaluation_function()
+        except Exception:
+            pass
 
-    # Run email notification migration
-    try:
-        from app.migrations.m003_email_notifications import migrate_email_notifications
-        migrate_email_notifications()
-    except Exception:
-        pass
+        # Run email notification migration
+        try:
+            from app.migrations.m003_email_notifications import migrate_email_notifications
+            migrate_email_notifications()
+        except Exception:
+            pass
 
-    # Run model comparison migration
-    try:
-        from app.migrations.m004_model_comparison import run_migration
-        run_migration()
-    except Exception:
-        pass
+        # Run model comparison migration
+        try:
+            from app.migrations.m004_model_comparison import run_migration
+            run_migration()
+        except Exception:
+            pass
 
-    # Run model comparison v2 migration
-    try:
-        from app.migrations.m005_model_comparison_v2 import run_migration
-        run_migration()
-    except Exception:
-        pass
+        # Run model comparison v2 migration
+        try:
+            from app.migrations.m005_model_comparison_v2 import run_migration
+            run_migration()
+        except Exception:
+            pass
     # Load existing schedules
     await scheduler.load_existing_schedules()
 
