@@ -1,4 +1,6 @@
-# Prompt Engineering Test Harness
+<p align="center">
+  <h1>Prompt Engineering Test Harness</h1>
+</p>
 
 A comprehensive testing framework for prompt engineering systems with automated evaluation, optimization, and monitoring capabilities.
 
@@ -65,15 +67,3 @@ cd server
 source venv/bin/activate
 python -m pytest tests/ -v
 ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
