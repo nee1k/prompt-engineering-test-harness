@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { Button } from '@mui/material'
 import PromptSystemForm from './PromptSystemForm'
 import TestRunForm from './TestRunForm'
 
@@ -314,21 +315,24 @@ function PromptSystemsList() {
                   </td>
                   <td>
                     <div className="action-buttons">
-                      <button 
-                        className="btn btn-outline btn-sm"
+                      <Button 
+                        variant="outlined"
+                        size="small"
                         onClick={() => showTemplate(system.template, system.name, JSON.parse(system.variables))}
                         title="View Template"
+                        sx={{ mr: 1 }}
                       >
                         Template
-                      </button>
-                      <button 
-                        className="btn btn-outline btn-sm"
+                      </Button>
+                      <Button 
+                        variant="outlined"
+                        size="small"
                         onClick={() => fetchHistory(system.id, system.name)}
                         disabled={historyLoading}
                         title="View History"
                       >
                         History
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -394,43 +398,21 @@ function PromptSystemsList() {
       
       {/* Action Buttons */}
       <div style={{ display: 'flex', justifyContent: 'center', marginTop: '1.5rem' }}>
-        <button
-          className="btn btn-large"
-          style={{
-            background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
-            color: '#fff',
-            border: 'none',
-            boxShadow: '0 2px 8px rgba(79,140,255,0.15)',
-            fontWeight: 600,
-            fontSize: '1.1rem',
-            padding: '0.7rem 2.2rem',
-            borderRadius: '0.5rem',
-            transition: 'background 0.2s',
-            cursor: 'pointer',
-            marginRight: '1rem'
-          }}
+        <Button
+          variant="contained"
+          color="primary"
           onClick={() => setCreateSystemModal(true)}
+          sx={{ mr: 2 }}
         >
           Create Prompt System
-        </button>
-        <button
-          className="btn btn-large"
-          style={{
-            background: 'linear-gradient(90deg, #1D2671 0%, #C33764 100%)',
-            color: '#fff',
-            border: 'none',
-            boxShadow: '0 2px 8px rgba(255,126,95,0.15)',
-            fontWeight: 600,
-            fontSize: '1.1rem',
-            padding: '0.7rem 2.2rem',
-            borderRadius: '0.5rem',
-            transition: 'background 0.2s',
-            cursor: 'pointer'
-          }}
+        </Button>
+        <Button
+          variant="contained"
+          color="secondary"
           onClick={() => setTestSystemModal(true)}
         >
           Test Prompt System
-        </button>
+        </Button>
       </div>
 
       {/* History Modal */}
