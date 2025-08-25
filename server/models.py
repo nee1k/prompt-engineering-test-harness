@@ -1,7 +1,19 @@
-from sqlalchemy import Column, String, Float, Integer, DateTime, Text, ForeignKey, Boolean
-from sqlalchemy.orm import relationship
-from database import Base
 from datetime import datetime
+
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Float,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
+from sqlalchemy.orm import relationship
+
+from database import Base
+
 
 class PromptSystem(Base):
     __tablename__ = "prompt_systems"
@@ -22,6 +34,7 @@ class PromptSystem(Base):
     test_schedules = relationship("TestSchedule", back_populates="prompt_system")
     model_comparisons = relationship("ModelComparison", back_populates="prompt_system")
 
+
 class TestRun(Base):
     __tablename__ = "test_runs"
 
@@ -35,6 +48,7 @@ class TestRun(Base):
     prompt_system = relationship("PromptSystem", back_populates="test_runs")
     test_schedule = relationship("TestSchedule", back_populates="test_runs")
     results = relationship("TestResult", back_populates="test_run")
+
 
 class TestResult(Base):
     __tablename__ = "test_results"
@@ -50,6 +64,7 @@ class TestResult(Base):
 
     test_run = relationship("TestRun", back_populates="results")
 
+
 class TestSchedule(Base):
     __tablename__ = "test_schedules"
 
@@ -57,7 +72,9 @@ class TestSchedule(Base):
     prompt_system_id = Column(String, ForeignKey("prompt_systems.id"))
     name = Column(String)
     regression_set = Column(Text)  # JSON string of regression set
-    interval_hours = Column(Integer)  # Minutes between runs (keeping column name for backward compatibility)
+    interval_hours = Column(
+        Integer
+    )  # Minutes between runs (keeping column name for backward compatibility)
     evaluation_function = Column(String, default="fuzzy")  # Evaluation function to use
     email_notifications = Column(Boolean, default=False)  # Enable email notifications
     email_recipients = Column(Text, nullable=True)  # JSON array of email addresses
@@ -69,6 +86,7 @@ class TestSchedule(Base):
 
     prompt_system = relationship("PromptSystem", back_populates="test_schedules")
     test_runs = relationship("TestRun", back_populates="test_schedule")
+
 
 class ModelComparison(Base):
     __tablename__ = "model_comparisons"
@@ -86,6 +104,7 @@ class ModelComparison(Base):
     prompt_system = relationship("PromptSystem", back_populates="model_comparisons")
     results = relationship("ModelComparisonResult", back_populates="model_comparison")
 
+
 class ModelComparisonResult(Base):
     __tablename__ = "model_comparison_results"
 
@@ -99,5 +118,3 @@ class ModelComparisonResult(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
 
     model_comparison = relationship("ModelComparison", back_populates="results")
-
-
