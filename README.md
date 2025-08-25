@@ -1,7 +1,5 @@
 # Prompt Engineering Test Harness
 
-[![Tests](https://github.com/nee1k/prompt-engineering-test-harness/workflows/Run%20Tests/badge.svg)](https://github.com/nee1k/prompt-engineering-test-harness/actions)
-
 A comprehensive testing framework for prompt engineering systems with automated evaluation, optimization, and monitoring capabilities.
 
 ## Features
