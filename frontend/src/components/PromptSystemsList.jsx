@@ -602,7 +602,7 @@ function PromptSystemsList() {
         <div className="modal-overlay" onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h3>Template - {templateModal.systemName}</h3>
+              <h3>Template</h3>
               <button 
                 className="btn-close"
                 onClick={() => setTemplateModal({ show: false, template: '', systemName: '', variables: [] })}
@@ -610,34 +610,7 @@ function PromptSystemsList() {
                 ×
               </button>
             </div>
-            <div className="modal-body">
-              <div style={{ marginBottom: '20px' }}>
-                <h4>Variables</h4>
-                <div style={{ 
-                  background: '#e3f2fd', 
-                  padding: '10px', 
-                  borderRadius: '4px',
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '8px'
-                }}>
-                  {templateModal.variables.map((variable, index) => (
-                    <span key={index} style={{
-                      background: '#1976d2',
-                      color: 'white',
-                      padding: '4px 8px',
-                      borderRadius: '12px',
-                      fontSize: '12px',
-                      fontWeight: '500'
-                    }}>
-                      {variable}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h4>Template</h4>
+            <div className="modal-body">              
                 <div style={{ 
                   background: '#f8f9fa', 
                   padding: '15px', 
@@ -650,7 +623,6 @@ function PromptSystemsList() {
                 }}>
                   {templateModal.template}
                 </div>
-              </div>
             </div>
           </div>
         </div>

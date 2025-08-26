@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import './PromptOptimizer.css'
+// styles migrated to global index.css
 
 function PromptOptimizer() {
   const [promptSystems, setPromptSystems] = useState([])

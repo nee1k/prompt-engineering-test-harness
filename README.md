@@ -1,69 +1,83 @@
-<p align="center">
-  <h1>Prompt Engineering Test Harness</h1>
-</p>
+# Prompt Engineering Test Harness
 
-A comprehensive testing framework for prompt engineering systems with automated evaluation, optimization, and monitoring capabilities.
-
-## Features
-
-- **Automated Test Runs**: Execute prompt systems against regression datasets
-- **LLM Integration**: Support for OpenAI and Ollama providers
-- **Prompt Optimization**: AI-powered prompt improvement suggestions
-- **Evaluation Metrics**: Multiple evaluation functions (fuzzy, exact, semantic, contains)
-- **Real-time Monitoring**: Live optimization progress tracking
-- **Comprehensive Testing**: Full test suite with mocked dependencies
+A testing framework for LLM prompt systems with automated evaluation, scheduling, and AI-powered prompt optimization.
 
 ## Quick Start
 
 ### Prerequisites
+- Docker and Docker Compose
+- OpenAI API key
 
-- Python 3.9+
-- Docker and Docker Compose (for full stack)
-- OpenAI API key (optional, for OpenAI integration)
+### Installation & Running
 
-### Setup
-
-1. **Clone the repository**:
+1. **Clone and setup:**
    ```bash
-   git clone https://github.com/nee1k/prompt-engineering-test-harness.git
-   cd prompt-engineering-test-harness
+   git clone https://github.com/nee1k/prompt-systems-monitor.git
+   cd prompt-systems-monitor
+   cp env.template .env
+   # Edit .env with your OpenAI API key
    ```
 
-2. **Run with Docker** (recommended):
+2. **Start all services:**
    ```bash
    docker-compose up -d
    ```
-   Access the application at: http://localhost:3000
 
-3. **Or run locally**:
-   ```bash
-   # Backend setup
-   cd server
-   ./setup.sh  # macOS/Linux
-   # or setup.bat  # Windows
-   
-   # Start the backend
-   source venv/bin/activate
-   python main.py
-   
-   # Frontend setup (in another terminal)
-   cd client
-   npm install
-   npm start
-   ```
+3. **Access the application:**
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - API: [http://localhost:8000](http://localhost:8000)
+   - Nginx (proxy): [http://localhost](http://localhost)
 
-## API Documentation
+## Environment Variables
 
-Once running, visit:
-- **API Docs**: http://localhost:8000/docs
-- **Frontend**: http://localhost:3000
-
-## Testing
-
-The project includes a comprehensive test suite:
-
+Required in `.env`:
 ```bash
-cd server
-source venv/bin/activate
-python -m pytest tests/ -v
+OPENAI_API_KEY=your_openai_api_key_here
 ```
+
+Optional (for email notifications):
+```bash
+SMTP_SERVER=smtp.gmail.com
+SMTP_USERNAME=your_email@gmail.com
+SMTP_PASSWORD=your_app_password
+FROM_EMAIL=your_email@gmail.com
+```
+
+## Features
+
+- **Prompt Systems**: Create and manage prompt templates with variables
+- **Test Execution**: Run tests with multiple evaluation methods
+- **Scheduled Testing**: Automate tests with configurable intervals
+- **Model Comparison**: Compare prompts across different AI models
+- **AI Prompt Optimizer**: Automatically improve prompts using LLM analysis
+- **Redis Persistence**: Optimization sessions survive server restarts
+
+## Usage Example
+
+**Prompt Template:**
+```
+Translate the following text to {language}: {text}
+```
+
+**Test Data (CSV):**
+```csv
+text,language,expected_output
+"Hello world","French","Bonjour le monde"
+"Good morning","Spanish","Buenos días"
+```
+
+**Result:** Get scores comparing AI outputs with expected translations
+
+## Evaluation Methods
+
+- `fuzzy` - String similarity (0.0-1.0)
+- `exact` - Perfect match (0.0 or 1.0)
+- `semantic` - Semantic similarity
+- `contains` - Substring matching
+
+## Tech Stack
+
+- **Backend**: FastAPI, PostgreSQL, Redis
+- **Frontend**: React 18, Vite
+- **LLM**: OpenAI, Ollama
+- **Infrastructure**: Docker, Nginx

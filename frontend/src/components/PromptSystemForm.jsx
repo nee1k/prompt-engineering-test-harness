@@ -141,17 +141,7 @@ function PromptSystemForm({ onSuccess }) {
           />
         </div>
 
-        <div className="form-group">
-          <label>Variables (comma-separated):</label>
-          <input
-            type="text"
-            name="variables"
-            value={formData.variables}
-            onChange={handleChange}
-            required
-            placeholder="e.g., text, language, style"
-          />
-        </div>
+        {/* Variables are now extracted automatically from the prompt template */}
 
         <div className="form-group">
           <label>Provider:</label>
