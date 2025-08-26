@@ -230,7 +230,7 @@ function CompareModels() {
           
           {/* Prompt Template Section */}
           <div className="form-group">
-            <label >Prompt Template:</label>
+            <label>Prompt Template:</label>
             <textarea
               name="template"
               value={promptTemplate}
@@ -242,7 +242,7 @@ function CompareModels() {
 
           {/* Regression Set Section */}
           <div className="form-group">
-            <label>Upload Regression Set (CSV or JSONL):</label>
+            <label>Regression Set:</label>
             <div className="file-upload-container">
               <div className="file-upload" onClick={() => document.getElementById('regression-file-input').click()}>
                 <input
@@ -265,11 +265,6 @@ function CompareModels() {
                   <p className="upload-description">
                     File should contain columns for variables and an 'expected_output' column
                   </p>
-                  {!regressionFile && (
-                    <p className="upload-hint">
-                      Supports .csv and .jsonl files
-                    </p>
-                  )}
                 </div>
               </div>
             </div>
@@ -302,7 +297,7 @@ function CompareModels() {
 
           {/* Models Selection Section */}
           <div className="form-group">
-            <label>Select Model to Compare:</label>
+            <label>Model:</label>
             <div className="model-selection-container">
               <select
                 className="form-control"

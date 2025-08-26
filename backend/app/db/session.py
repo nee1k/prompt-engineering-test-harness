@@ -4,18 +4,22 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-# Use PostgreSQL in production, SQLite in development
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "sqlite:///./prompt-engineering-test-harness.db"
-)
+DATABASE_URL = os.getenv("DATABASE_URL")
 
-# Configure engine based on database type
-if DATABASE_URL.startswith("postgresql"):
-    # PostgreSQL configuration
-    engine = create_engine(DATABASE_URL)
-else:
-    # SQLite configuration
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+if not DATABASE_URL:
+    raise ValueError(
+        "DATABASE_URL is not set. A PostgreSQL connection string is required, e.g. "
+        "postgresql://user:password@host:5432/dbname"
+    )
+
+if not DATABASE_URL.startswith("postgresql"):
+    raise ValueError(
+        "Unsupported DATABASE_URL. Only PostgreSQL is allowed. Received: "
+        f"{DATABASE_URL}"
+    )
+
+# PostgreSQL engine
+engine = create_engine(DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
