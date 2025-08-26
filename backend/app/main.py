@@ -15,6 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from app.db.session import engine, SessionLocal, Base
+from sqlalchemy.orm import joinedload
 from app.models import (
     PromptSystem,
     TestRun,
@@ -151,7 +152,8 @@ async def call_openai(
         )
 
     try:
-        response = openai_client.chat.completions.create(
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
             model=model,
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature,
@@ -1043,8 +1045,16 @@ async def run_optimization(optimization_id: str):
                 session["config"]["evaluationMethod"],
             )
 
-            # Get improved prompt from LLM
-            improved_prompt = await get_improved_prompt(improvement_prompt)
+            # Get improved prompt using the same provider/model as the prompt system
+            improved_prompt = await get_improved_prompt(
+                improvement_prompt,
+                provider=prompt_system.provider,
+                model=prompt_system.model,
+                temperature=prompt_system.temperature,
+                max_tokens=prompt_system.max_tokens,
+                top_p=prompt_system.top_p,
+                top_k=prompt_system.top_k,
+            )
 
             # Check if we got an empty prompt (indicating an error)
             error_message = None
@@ -1145,19 +1155,30 @@ def generate_improvement_prompt(
         Please return only the improved prompt, nothing else. Do not include 'improved prompt' at the beginning."""
 
 
-async def get_improved_prompt(improvement_prompt: str) -> str:
-    """Get an improved prompt from the LLM"""
+async def get_improved_prompt(
+    improvement_prompt: str,
+    provider: str,
+    model: str,
+    temperature: float,
+    max_tokens: int,
+    top_p: float,
+    top_k: Optional[int] = None,
+) -> str:
+    """Get an improved prompt using the same provider/model as the prompt system."""
     try:
-        # Use the improved call_openai function for better error handling
-        system_message = "You are an expert prompt engineer. Provide clear, specific, and effective prompt improvements."
+        system_message = (
+            "You are an expert prompt engineer. Provide clear, specific, and effective prompt improvements."
+        )
         full_prompt = f"{system_message}\n\n{improvement_prompt}"
 
-        return await call_openai(
+        return await call_llm(
             prompt=full_prompt,
-            model="gpt-4",
-            temperature=0.7,
-            max_tokens=500,
-            top_p=1.0,
+            provider=provider,
+            model=model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            top_k=top_k,
         )
     except HTTPException as e:
         print(f"Error getting improved prompt: {e.detail}")

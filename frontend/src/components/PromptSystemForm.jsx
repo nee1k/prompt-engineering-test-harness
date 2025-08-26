@@ -148,7 +148,7 @@ function PromptSystemForm({ onSuccess }) {
             <label>Provider:</label>
             <select name="provider" value={formData.provider} onChange={handleProviderChange} className="provider-select">
               <option value="openai">OpenAI</option>
-              <option value="ollama">Ollama (Local)</option>
+              <option value="ollama">Ollama</option>
             </select>
             {formData.provider === 'ollama' && ollamaStatus && (
               <div className="ollama-status">
