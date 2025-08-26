@@ -155,74 +155,67 @@ function TestSchedules() {
       {createScheduleModal && (
         <div className="modal-overlay" onClick={() => setCreateScheduleModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '800px' }}>
-            <div className="modal-header">
-              <h3>Create New Schedule</h3>
-              <button 
-                className="btn-close"
-                onClick={() => setCreateScheduleModal(false)}
-              >
-                ×
-              </button>
-            </div>
             <div className="modal-body">
               <form onSubmit={handleSubmit} className="schedule-form">
-            <div className="form-group">
-              <label>Prompt System:</label>
-              <select
-                name="prompt_system_id"
-                value={formData.prompt_system_id}
-                onChange={handleInputChange}
-                required
-              >
-                <option value="">Select a prompt system</option>
-                {promptSystems.map(system => (
-                  <option key={system.id} value={system.id}>
-                    {system.name}
-                  </option>
-                ))}
-              </select>
-            </div>
 
-            <div className="form-group">
-              <label>Schedule Name:</label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="e.g., Daily Translation Test"
-                required
-              />
-            </div>
+              <div className="form-group" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                <div style={{ flex: 1 }}>
+                  <label>Schedule Name:</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Daily Translation Test"
+                    required
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label>Interval (minutes):</label>
+                  <input
+                    type="number"
+                    name="interval_minutes"
+                    value={formData.interval_minutes}
+                    onChange={handleInputChange}
+                    min="1"
+                    max="1440"
+                    required
+                  />
+                </div>
+              </div>
 
-            <div className="form-group">
-              <label>Interval (minutes):</label>
-              <input
-                type="number"
-                name="interval_minutes"
-                value={formData.interval_minutes}
-                onChange={handleInputChange}
-                min="1"
-                max="1440"
-                required
-              />
-              <small>Enter 1 for 1 minute, 60 for 1 hour, 1440 for 1 day, etc.</small>
-            </div>
-
-            <div className="form-group">
-              <label>Evaluation Function:</label>
-              <select
-                name="evaluation_function"
-                value={formData.evaluation_function}
-                onChange={handleInputChange}
-                required
-              >
-                {evaluationFunctions.map((func) => (
-                  <option key={func.id} value={func.id}>
-                    {func.name} - {func.description}
-                  </option>
-                ))}
-              </select>
+            <div className="form-group" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+              <div style={{ flex: 1 }}>
+                <label>Prompt System:</label>
+                <select
+                  name="prompt_system_id"
+                  value={formData.prompt_system_id}
+                  onChange={handleInputChange}
+                  required
+                >
+                  <option value="">Select a prompt system</option>
+                  {promptSystems.map(system => (
+                    <option key={system.id} value={system.id}>
+                      {system.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ flex: 1 }}>
+                <label>Evaluation Function:</label>
+                <select
+                  name="evaluation_function"
+                  value={formData.evaluation_function}
+                  onChange={handleInputChange}
+                  required
+                >
+                  {evaluationFunctions.map((func) => (
+                    <option key={func.id} value={func.id}>
+                      {func.name} - {func.description}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="form-group">
@@ -250,38 +243,37 @@ function TestSchedules() {
 
             {formData.email_notifications && (
               <>
-                <div className="form-group">
-                  <label>Email Recipients (comma-separated):</label>
-                  <input
-                    type="text"
-                    name="email_recipients"
-                    value={formData.email_recipients}
-                    onChange={handleInputChange}
-                    placeholder="user1@example.com, user2@example.com"
-                    required={formData.email_notifications}
-                  />
-                  <small>Enter email addresses separated by commas</small>
-                </div>
-
-                <div className="form-group">
-                  <label>Alert Threshold (score drop %):</label>
-                  <input
-                    type="number"
-                    name="alert_threshold"
-                    value={formData.alert_threshold}
-                    onChange={handleInputChange}
-                    min="0.01"
-                    max="1.0"
-                    step="0.01"
-                    required={formData.email_notifications}
-                  />
-                  <small>Send alert when score drops by this percentage (e.g., 0.2 = 20%)</small>
+                <div className="form-group" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                  <div style={{ flex: 1 }}>
+                    <label>Email Recipients (comma-separated):</label>
+                    <input
+                      type="text"
+                      name="email_recipients"
+                      value={formData.email_recipients}
+                      onChange={handleInputChange}
+                      placeholder="user1@example.com, user2@example.com"
+                      required={formData.email_notifications}
+                    />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <label>Alert Threshold (score drop %):</label>
+                    <input
+                      type="number"
+                      name="alert_threshold"
+                      value={formData.alert_threshold}
+                      onChange={handleInputChange}
+                      min="0.01"
+                      max="1.0"
+                      step="0.01"
+                      required={formData.email_notifications}
+                    />
+                  </div>
                 </div>
               </>
             )}
 
             <div className="form-group">
-              <label>Regression Set File:</label>
+              <label>Regression Set:</label>
               <div className="file-upload-container">
                 <div className="file-upload" onClick={() => document.getElementById('schedule-file-input').click()}>
                   <input

@@ -109,7 +109,7 @@ function TestRunForm() {
       <div className="test-form-container">
         <form onSubmit={handleRunTest} className="test-form">
           <div className="form-group">
-            <label>Select Prompt System:</label>
+            <label>Prompt System:</label>
             <select 
               value={selectedSystem} 
               onChange={(e) => setSelectedSystem(e.target.value)}
@@ -140,7 +140,7 @@ function TestRunForm() {
           </div>
 
           <div className="form-group">
-            <label>Upload Regression Set (CSV or JSONL):</label>
+            <label>Regression Set:</label>
             <div className="file-upload-container">
               <div className="file-upload" onClick={() => document.getElementById('file-input').click()}>
                 <input

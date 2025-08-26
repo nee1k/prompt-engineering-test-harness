@@ -1311,56 +1311,56 @@ async def delete_optimization_session_endpoint(optimization_id: str):
         )
 
 
-# # Initialize scheduler on startup
-# @app.on_event("startup")
-# async def startup_event():
-#     # Test Redis connection
-#     try:
-#         redis_client.ping()
-#         print("✓ Redis connection established")
-#         # Clean up old sessions on startup
-#         cleanup_old_sessions()
-#     except Exception as e:
-#         print(f"⚠ Redis connection failed: {e}")
-#         print("Optimization sessions will not persist across restarts")
-#     # Run database migrations unless in test mode
-#     if os.getenv("TESTING") != "true":
-#         try:
-#             from app.migrations.m001_initial import run_migration
-#             run_migration()
-#         except Exception as e:
-#             print(f"Migration warning: {e}")
-#             pass
+# Initialize scheduler on startup
+@app.on_event("startup")
+async def startup_event():
+    # Test Redis connection
+    try:
+        redis_client.ping()
+        print("✓ Redis connection established")
+        # Clean up old sessions on startup
+        cleanup_old_sessions()
+    except Exception as e:
+        print(f"⚠ Redis connection failed: {e}")
+        print("Optimization sessions will not persist across restarts")
+    # Run database migrations unless in test mode
+    if os.getenv("TESTING") != "true":
+        try:
+            from app.migrations.m001_initial import run_migration
+            run_migration()
+        except Exception as e:
+            print(f"Migration warning: {e}")
+            pass
 
-#         # Run evaluation function migration
-#         try:
-#             from app.migrations.m002_evaluation_function import migrate_evaluation_function
-#             migrate_evaluation_function()
-#         except Exception:
-#             pass
+        # Run evaluation function migration
+        try:
+            from app.migrations.m002_evaluation_function import migrate_evaluation_function
+            migrate_evaluation_function()
+        except Exception:
+            pass
 
-#         # Run email notification migration
-#         try:
-#             from app.migrations.m003_email_notifications import migrate_email_notifications
-#             migrate_email_notifications()
-#         except Exception:
-#             pass
+        # Run email notification migration
+        try:
+            from app.migrations.m003_email_notifications import migrate_email_notifications
+            migrate_email_notifications()
+        except Exception:
+            pass
 
-#         # Run model comparison migration
-#         try:
-#             from app.migrations.m004_model_comparison import run_migration
-#             run_migration()
-#         except Exception:
-#             pass
+        # Run model comparison migration
+        try:
+            from app.migrations.m004_model_comparison import run_migration
+            run_migration()
+        except Exception:
+            pass
 
-#         # Run model comparison v2 migration
-#         try:
-#             from app.migrations.m005_model_comparison_v2 import run_migration
-#             run_migration()
-#         except Exception:
-#             pass
-#     # Load existing schedules
-#     await scheduler.load_existing_schedules()
+        # Run model comparison v2 migration
+        try:
+            from app.migrations.m005_model_comparison_v2 import run_migration
+            run_migration()
+        except Exception:
+            pass
+    # Load existing schedules
+    await scheduler.load_existing_schedules()
 
 
 if __name__ == "__main__":

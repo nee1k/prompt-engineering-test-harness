@@ -143,70 +143,71 @@ function PromptSystemForm({ onSuccess }) {
 
         {/* Variables are now extracted automatically from the prompt template */}
 
-        <div className="form-group">
-          <label>Provider:</label>
-          <select name="provider" value={formData.provider} onChange={handleProviderChange} className="provider-select">
-            <option value="openai">OpenAI</option>
-            <option value="ollama">Ollama (Local)</option>
-          </select>
-          {formData.provider === 'ollama' && ollamaStatus && (
-            <div className="ollama-status">
-              {ollamaStatus.status === 'running' ? (
-                <span className="status-success">✓ Ollama is running</span>
-              ) : (
-                <span className="status-error">✗ Ollama is not running</span>
-              )}
-            </div>
-          )}
+        <div className="form-group" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <label>Provider:</label>
+            <select name="provider" value={formData.provider} onChange={handleProviderChange} className="provider-select">
+              <option value="openai">OpenAI</option>
+              <option value="ollama">Ollama (Local)</option>
+            </select>
+            {formData.provider === 'ollama' && ollamaStatus && (
+              <div className="ollama-status">
+                {ollamaStatus.status === 'running' ? (
+                  <span className="status-success">✓ Ollama is running</span>
+                ) : (
+                  <span className="status-error">✗ Ollama is not running</span>
+                )}
+              </div>
+            )}
+          </div>
+          <div style={{ flex: 1 }}>
+            <label>Model:</label>
+            <select name="model" value={formData.model} onChange={handleChange}>
+              {getCurrentModels().map((model) => (
+                <option key={model.id} value={model.id}>
+                  {model.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div className="form-group">
-          <label>Model:</label>
-          <select name="model" value={formData.model} onChange={handleChange}>
-            {getCurrentModels().map((model) => (
-              <option key={model.id} value={model.id}>
-                {model.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="form-group">
-          <label>Temperature:</label>
-          <input
-            type="number"
-            name="temperature"
-            value={formData.temperature}
-            onChange={handleChange}
-            min="0"
-            max="2"
-            step="0.1"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Max Tokens:</label>
-          <input
-            type="number"
-            name="max_tokens"
-            value={formData.max_tokens}
-            onChange={handleChange}
-            min="1"
-            max="4000"
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Top P:</label>
-          <input
-            type="number"
-            name="top_p"
-            value={formData.top_p}
-            onChange={handleChange}
-            min="0"
-            max="1"
-            step="0.1"
-          />
+        <div className="form-group" style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}>
+            <label>Temperature:</label>
+            <input
+              type="number"
+              name="temperature"
+              value={formData.temperature}
+              onChange={handleChange}
+              min="0"
+              max="2"
+              step="0.1"
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label>Max Tokens:</label>
+            <input
+              type="number"
+              name="max_tokens"
+              value={formData.max_tokens}
+              onChange={handleChange}
+              min="1"
+              max="4000"
+            />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label>Top P:</label>
+            <input
+              type="number"
+              name="top_p"
+              value={formData.top_p}
+              onChange={handleChange}
+              min="0"
+              max="1"
+              step="0.1"
+            />
+          </div>
         </div>
 
         <div className="form-actions">

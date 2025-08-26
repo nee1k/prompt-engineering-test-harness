@@ -11,10 +11,13 @@ function PromptOptimizer() {
     evaluationMethod: 'fuzzy'
   })
   const [isOptimizing, setIsOptimizing] = useState(false)
+  const [hasStarted, setHasStarted] = useState(false)
   const [optimizationResults, setOptimizationResults] = useState([])
   const [currentIteration, setCurrentIteration] = useState(0)
   const [totalCost, setTotalCost] = useState(0.0)
   const [apiKeyError, setApiKeyError] = useState(false)
+  const [regressionSet, setRegressionSet] = useState([])
+  const [regressionFileName, setRegressionFileName] = useState('')
 
   useEffect(() => {
     fetchPromptSystems()
@@ -37,6 +40,7 @@ function PromptOptimizer() {
     }
 
     setIsOptimizing(true)
+    setHasStarted(true)
     setCurrentIteration(0)
     setTotalCost(0.0)
     setOptimizationResults([])
@@ -64,6 +68,28 @@ function PromptOptimizer() {
     } catch (error) {
       console.error('Error starting optimization:', error)
       setIsOptimizing(false)
+    }
+  }
+
+  const handleRegressionFileUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+    setRegressionFileName(file.name)
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      const response = await fetch('/api/upload-regression-set/', {
+        method: 'POST',
+        body: formData
+      })
+      if (!response.ok) throw new Error('Upload failed')
+      const data = await response.json()
+      setRegressionSet(data.regression_set || [])
+    } catch (error) {
+      console.error('Error uploading regression set:', error)
+      setRegressionSet([])
     }
   }
 
@@ -121,94 +147,83 @@ function PromptOptimizer() {
 
   return (
     <div className="prompt-optimizer">
-
-      <div className="optimization-container">
         <div className="optimization-setup">
-          <h3>Optimization Setup</h3>
-          
-          <div className="form-group">
-            <label>Select Prompt System:</label>
-            <select 
-              value={selectedSystem} 
-              onChange={(e) => setSelectedSystem(e.target.value)}
-              disabled={isOptimizing}
-            >
-              <option value="">Choose a prompt system...</option>
-              {promptSystems.map(system => (
-                <option key={system.id} value={system.id}>
-                  {system.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Prompt System:</label>
+              <select 
+                value={selectedSystem} 
+                onChange={(e) => setSelectedSystem(e.target.value)}
+                disabled={isOptimizing}
+              >
+                <option value="">Choose a prompt system...</option>
+                {promptSystems.map(system => (
+                  <option key={system.id} value={system.id}>
+                    {system.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div className="optimization-params">
-            <div className="params-grid">
-              <div className="form-group">
-                <label>Max Iterations:</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={optimizationConfig.maxIterations}
-                  onChange={(e) => setOptimizationConfig({
-                    ...optimizationConfig,
-                    maxIterations: parseInt(e.target.value)
-                  })}
-                  disabled={isOptimizing}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Evaluation Method:</label>
-                <select
-                  value={optimizationConfig.evaluationMethod}
-                  onChange={(e) => setOptimizationConfig({
-                    ...optimizationConfig,
-                    evaluationMethod: e.target.value
-                  })}
-                  disabled={isOptimizing}
-                >
-                  <option value="fuzzy">Fuzzy Match</option>
-                  <option value="exact">Exact Match</option>
-                  <option value="semantic">Semantic Similarity</option>
-                  <option value="contains">Contains</option>
-                </select>
-              </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Evaluation Method:</label>
+              <select
+                value={optimizationConfig.evaluationMethod}
+                onChange={(e) => setOptimizationConfig({
+                  ...optimizationConfig,
+                  evaluationMethod: e.target.value
+                })}
+                disabled={isOptimizing}
+              >
+                <option value="fuzzy">Fuzzy Match</option>
+                <option value="exact">Exact Match</option>
+                <option value="semantic">Semantic Similarity</option>
+                <option value="contains">Contains</option>
+              </select>
             </div>
           </div>
 
-          <div className="budget-controls">
-
-            <div className="budget-grid">
-              <div className="form-group">
-                <label>Cost Budget ($):</label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  value={optimizationConfig.costBudget}
-                  onChange={(e) => setOptimizationConfig({
-                    ...optimizationConfig,
-                    costBudget: parseFloat(e.target.value)
-                  })}
-                  disabled={isOptimizing}
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Time Budget (seconds):</label>
-                <input
-                  type="number"
-                  min="60"
-                  value={optimizationConfig.timeBudget}
-                  onChange={(e) => setOptimizationConfig({
-                    ...optimizationConfig,
-                    timeBudget: parseInt(e.target.value)
-                  })}
-                  disabled={isOptimizing}
-                />
-              </div>
+          <div className="optimization-params" style={{ display: 'flex', gap: '1rem' }}>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Max Iterations:</label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={optimizationConfig.maxIterations}
+                onChange={(e) => setOptimizationConfig({
+                  ...optimizationConfig,
+                  maxIterations: parseInt(e.target.value)
+                })}
+                disabled={isOptimizing}
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Cost Budget ($):</label>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={optimizationConfig.costBudget}
+                onChange={(e) => setOptimizationConfig({
+                  ...optimizationConfig,
+                  costBudget: parseFloat(e.target.value)
+                })}
+                disabled={isOptimizing}
+              />
+            </div>
+            <div className="form-group" style={{ flex: 1 }}>
+              <label>Time Budget (seconds):</label>
+              <input
+                type="number"
+                min="60"
+                value={optimizationConfig.timeBudget}
+                onChange={(e) => setOptimizationConfig({
+                  ...optimizationConfig,
+                  timeBudget: parseInt(e.target.value)
+                })}
+                disabled={isOptimizing}
+              />
             </div>
           </div>
 
@@ -234,8 +249,6 @@ function PromptOptimizer() {
         </div>
 
         <div className="optimization-progress">
-          <h3>Optimization Progress</h3>
-          
           {apiKeyError && (
             <div className="api-key-error-banner">
               <span className="error-icon">🔑</span>
@@ -300,7 +313,6 @@ function PromptOptimizer() {
           )}
         </div>
       </div>
-    </div>
   )
 }
 

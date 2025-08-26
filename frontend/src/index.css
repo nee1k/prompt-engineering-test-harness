@@ -660,6 +660,8 @@ body {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
+  min-width: 800px;
+  max-width: 1000px;
 }
 
 .test-run-info {
@@ -2018,7 +2020,7 @@ body {
 
 /* Prompt Optimizer Styles (migrated from components/PromptOptimizer.css) */
 .prompt-optimizer {
-  padding: 20px;
+  /* padding: 20px; */
   max-width: 1200px;
   margin: 0 auto;
   font-family: inherit;
@@ -2026,8 +2028,8 @@ body {
 
 .optimization-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+  grid-template-columns: 1fr;
+  /* gap: 30px; */
 }
 
 .optimization-setup {
@@ -2035,13 +2037,6 @@ body {
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.optimization-setup h3 {
-  margin: 0 0 20px 0;
-  color: #333;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-semibold);
 }
 
 /* Reuse existing form-group styles where possible; adjust small/help text */
@@ -2105,6 +2100,12 @@ body {
   padding: 25px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.optimizer-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 15px;
 }
 
 .optimization-progress h3 {
@@ -2205,7 +2206,11 @@ body {
 @media (max-width: 768px) {
   .optimization-container {
     grid-template-columns: 1fr;
-    gap: 20px;
+    /* gap: 20px; */
+  }
+
+  .optimizer-grid-3 {
+    grid-template-columns: 1fr;
   }
 
   .params-grid,
